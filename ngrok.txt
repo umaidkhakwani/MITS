@@ -1,0 +1,12 @@
+for tunneling. shopify webhook can only make a request 
+to a public server and to get a public server we used ngrok 
+to get the public address for limited time period.
+
+npx ngrok http 5000
+
+
+web server for frontend
+application server for backend
+database server for inventory data (Xampp: mysql)
+file server to store images of products???
+free CDN required??? (only available in business, cloud startup)

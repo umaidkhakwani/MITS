@@ -1,0 +1,14 @@
+{
+  "webhook": {
+    "topic": "products/update",
+    "address": "https://12345.ngrok.io/",
+    "format": "json",
+    "api_version": "2022-10"
+  }
+}
+
+for tunneling. shopify webhook can only make a request 
+to a public server and to get a public server we used ngrok 
+to get the public address for limited time period.
+
+npx ngrok http 5000

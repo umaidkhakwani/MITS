@@ -1,0 +1,58 @@
+partners account
+
+client id:
+41a3714bb86e2351064ade203b01d6eb
+
+client secret:
+b900e57bfbeccf483b5f5622b6bf62ba
+
+
+mept-app 
+
+client id:
+454dd9e92c54e7cb54277d21063a204c
+
+client secret:
+797dec21baad496285ab5f94e1a3b0e5
+
+-----------------------------------------------------------------
+
+ "contact_email": null,
+
+Total order count (get)
+/admin/api/2023-07/orders/count.json?status=any
+
+total orders details (get)
+orders.json?status=any
+
+---------------BUGS-------------------------------
+
+1) product create disable button feature
+2) sorting function in orders and customers.
+3) product_details gives null at start in (analytics.js)
+
+
+jacket, Quantity: 26
+
+Rado Watch, Quantity: 21
+
+Ring, Quantity: 5
+Title: Ring, Quantity: 7
+Title: Ring, Quantity: 6
+
+gloves, Quantity: 14
+
+Title: Orange Snowboard, Quantity: 7
+Title: Orange Snowboard, Quantity: 6
+
+Title: Airpods, Quantity: 3
+Title: Airpods, Quantity: 2
+Title: Airpods, Quantity: 5
+
+Title: Keyboard, Quantity: 4
+Title: Keyboard, Quantity: 3
+
+Yellow Snowboard, Quantity: 7
+
+Title: Red Snowboard, Quantity: 1
+Title: Red Snowboard, Quantity: 4
