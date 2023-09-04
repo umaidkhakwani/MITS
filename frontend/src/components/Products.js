@@ -17,6 +17,8 @@ import Analytics from "./Analytics";
 import ApexChart from "../Charts/Product_stat";
 import ApexChart_2 from "../Charts/Sales_per_day";
 import ReactDOM from "react-dom";
+import Warehouse from "./Warehouse";
+import Warehouse_ftn from "./warehouse/Warehouse_component";
 
 // import Select, { SelectChangeEvent } from '@mui/material/Select';
 
@@ -91,6 +93,7 @@ export default function Product() {
       const response = await axios.get(API_LINK + "get_orders");
       console.log("data sent from backend :: ", response.data.orders);
       console.log(typeof response.data);
+      if (response.data.orders){
       setresponseData_orders(
         response.data.orders
           .slice()
@@ -101,6 +104,9 @@ export default function Product() {
           )
       );
       sorting_function(); // Move this line to after setting the state
+          }else{
+            setresponseData_orders(0)
+          }
     } catch (error) {
       console.error("Error fetching data:", error);
       // Handle the error
@@ -250,7 +256,7 @@ export default function Product() {
                 Analytics
               </MenuItem>
               <MenuItem value={51} onClick={get_default}>
-                Signup
+                Warehouse
               </MenuItem>
             </Select>
             {inventory === 10 ? (
@@ -524,6 +530,7 @@ export default function Product() {
               </div>
             ) : inventory === 51 ? (
               <div>
+              <Warehouse_ftn />
                 {/* <SignInSide />
                 <BrowserRouter>
                   <Switch>

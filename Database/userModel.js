@@ -20,18 +20,43 @@ const createUserTable = async  () => {
   }
 };
 
+// // Insert a New User
+// const insertUser = (user) => {
+//   const { fname, lname, email, password, userToken } = user;
+//   const sql = 'INSERT INTO users (fname, lname, email, password, userToken) VALUES (?, ?, ?, ?, ?)';
+//   return connection.promise().query(sql, [fname, lname, email, password, userToken]);
+// };
+
+// // Fetch User by Email
+// const getUserByEmail = (email) => {
+//   const sql = 'SELECT * FROM users WHERE email = ?';
+//   return connection.promise().query(sql, [email]);
+// };
+
+
 // Insert a New User
-const insertUser = (user) => {
+const insertUser = async (user) => {
   const { fname, lname, email, password, userToken } = user;
-  const sql = 'INSERT INTO users (fname, lname, email, password, userToken) VALUES (?, ?, ?)';
-  return connection.promise().query(sql, [fname, lname, email, password, userToken]);
+  const sql = 'INSERT INTO users (fname, lname, email, password, userToken) VALUES (?, ?, ?, ?, ?)';
+  const pool = await connection.getConnection();
+  try {
+    await pool.query(sql, [fname, lname, email, password, userToken]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
 };
 
 // Fetch User by Email
-const getUserByEmail = (email) => {
+const getUserByEmail = async (email) => {
   const sql = 'SELECT * FROM users WHERE email = ?';
-  return connection.promise().query(sql, [email]);
+  const pool = await connection.getConnection();
+  try {
+    return await pool.query(sql, [email]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
 };
+
 
 module.exports = {
   createUserTable,

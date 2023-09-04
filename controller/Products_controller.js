@@ -1,12 +1,14 @@
-const shopify_api_key = '169f5d9abebdf0dfac8ddad34aa6c5bd'
-const shopify_token_pass = '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'
+const shopify_api_key = "1ad82ed2116c803c7f58f9667e7f72bb";
+const shopify_token_pass = "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";
 const endpoint = 'products'
 const product_id = '8540355002668'
+const store = "jagpowered"
+
 
 
 let get_prod ={
     'method': 'GET',
-    'url': `https://${shopify_api_key}:${shopify_token_pass}@dummy-test-store-001.myshopify.com/admin/api/2023-07/${endpoint}.json
+    'url': `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/${endpoint}.json
     `,
     'headers': {
         'Content-type':'application/json'
@@ -15,7 +17,7 @@ let get_prod ={
 
 let create_prod ={
     'method': 'POST',
-    'url': `https://${shopify_api_key}:${shopify_token_pass}@dummy-test-store-001.myshopify.com/admin/api/2023-07/${endpoint}.json
+    'url': `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/${endpoint}.json
     `,
     'headers': {
         'Content-type':'application/json'
@@ -44,7 +46,7 @@ let create_prod ={
 
 let update_prod ={
     'method': 'PUT',
-    'url': `https://${shopify_api_key}:${shopify_token_pass}@dummy-test-store-001.myshopify.com/admin/api/2023-07/${endpoint}/${product_id}.json`,
+    'url': `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/${endpoint}/${product_id}.json`,
     'headers': {
         'Content-type':'application/json'
     },
@@ -61,7 +63,7 @@ let update_prod ={
 
 let delete_prod ={
     'method': 'DELETE',
-    'url': `https://${shopify_api_key}:${shopify_token_pass}@dummy-test-store-001.myshopify.com/admin/api/2023-07/${endpoint}/${product_id}.json`,
+    'url': `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/${endpoint}/${product_id}.json`,
     'headers': {
         'Content-type':'application/json'
     }

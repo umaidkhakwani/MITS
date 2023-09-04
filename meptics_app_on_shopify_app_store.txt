@@ -7,6 +7,8 @@ client secret:
 b900e57bfbeccf483b5f5622b6bf62ba
 
 
+
+
 mept-app 
 
 client id:
@@ -31,28 +33,3 @@ orders.json?status=any
 2) sorting function in orders and customers.
 3) product_details gives null at start in (analytics.js)
 
-
-jacket, Quantity: 26
-
-Rado Watch, Quantity: 21
-
-Ring, Quantity: 5
-Title: Ring, Quantity: 7
-Title: Ring, Quantity: 6
-
-gloves, Quantity: 14
-
-Title: Orange Snowboard, Quantity: 7
-Title: Orange Snowboard, Quantity: 6
-
-Title: Airpods, Quantity: 3
-Title: Airpods, Quantity: 2
-Title: Airpods, Quantity: 5
-
-Title: Keyboard, Quantity: 4
-Title: Keyboard, Quantity: 3
-
-Yellow Snowboard, Quantity: 7
-
-Title: Red Snowboard, Quantity: 1
-Title: Red Snowboard, Quantity: 4

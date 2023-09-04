@@ -1,14 +1,16 @@
 
-const shopify_api_key = '169f5d9abebdf0dfac8ddad34aa6c5bd'
-const shopify_token_pass = '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'
+const shopify_api_key = "1ad82ed2116c803c7f58f9667e7f72bb";
+const shopify_token_pass = "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";
 const endpoint = 'orders'
 const api_version = '2023-07'
 const order_id = "5468910125356"
+const store = "jagpowered"
 
+// https://1ad82ed2116c803c7f58f9667e7f72bb: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@jagpowered.myshopify.com/admin/api/2023-07/orders.json
 
 let get_orders ={
     'method': 'GET',
-    'url': `https://${shopify_api_key}:${shopify_token_pass}@dummy-test-store-001.myshopify.com/admin/api/${api_version}/${endpoint}.json
+    'url': `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/${api_version}/${endpoint}.json
     `,
     'headers': {
         'Content-type':'application/json'
@@ -17,7 +19,7 @@ let get_orders ={
 
 let create_order ={
     'method': 'POST',
-    'url': `https://${shopify_api_key}:${shopify_token_pass}@dummy-test-store-001.myshopify.com/admin/api/${api_version}/${endpoint}.json
+    'url': `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/${api_version}/${endpoint}.json
     `,
     'headers': {
         'Content-type':'application/json'
@@ -47,7 +49,7 @@ let create_order ={
 
 let update_order ={
     'method': 'PUT',
-    'url': `https://${shopify_api_key}:${shopify_token_pass}@dummy-test-store-001.myshopify.com/admin/api/${api_version}/${endpoint}/${order_id}.json`,
+    'url': `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/${api_version}/${endpoint}/${order_id}.json`,
     'headers': {
         'Content-type':'application/json'
     },
@@ -62,7 +64,7 @@ let update_order ={
 
 let cancel_order ={
     'method': 'POST',
-    'url': `https://${shopify_api_key}:${shopify_token_pass}@dummy-test-store-001.myshopify.com/admin/api/${api_version}/${endpoint}/${order_id}/cancel.json`,
+    'url': `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/${api_version}/${endpoint}/${order_id}/cancel.json`,
     'headers': {
         'Content-type':'application/json'
     }
@@ -70,7 +72,7 @@ let cancel_order ={
 
 let delete_order ={
     'method': 'DELETE',
-    'url': `https://${shopify_api_key}:${shopify_token_pass}@dummy-test-store-001.myshopify.com/admin/api/${api_version}/${endpoint}/${order_id}.json`,
+    'url': `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/${api_version}/${endpoint}/${order_id}.json`,
     'headers': {
         'Content-type':'application/json'
     }

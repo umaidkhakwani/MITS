@@ -15,6 +15,7 @@ import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import firebase_app from "../Firebase/firebase";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import axios from "axios";
 
 // function Copyright(props) {
 //   return (
@@ -50,6 +51,7 @@ export default function SignUp() {
   });
 
   const auth = getAuth(firebase_app);
+  var API_LINK = "http://localhost:5000/";
 
   const handle_create_user = (field, value) => {
     // setInventory(event.target.value);
@@ -117,6 +119,15 @@ export default function SignUp() {
         user_create.password
       );
       console.log("User created successfully!");
+      axios
+      .post(API_LINK + "register", user_create)
+      .then((response) => {
+        // setProducts(response.data.products);
+        console.log("send data to backend :: ", response.data);
+        console.log(typeof response.data);
+      })
+      .catch((err) => console.error(err));
+
       alert("User Created Successfully!!!")
     } catch (error) {
       console.error(error.message);

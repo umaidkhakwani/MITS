@@ -17,6 +17,8 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 import firebase_app from "../Firebase/firebase";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+const auth = getAuth(firebase_app);
+
 
 const defaultTheme = createTheme();
 
@@ -36,7 +38,6 @@ export default function Login() {
     password: "",
   });
 
-  const auth = getAuth(firebase_app);
 
   const handle_create_user = (field, value) => {
     // setInventory(event.target.value);
