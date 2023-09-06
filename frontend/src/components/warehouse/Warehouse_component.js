@@ -21,6 +21,7 @@ import firebase_app from "../../Firebase/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Inventory_ftn from "./Inventory";
 import Transfer_Stock from "./Transfer_Stock";
+import convertToUTC from "../UTC_converter";
 
 const auth = getAuth(firebase_app);
 
@@ -139,22 +140,26 @@ function Warehouse_ftn() {
   const timeSetting = () => {
     const currentDate = new Date();
 
+    const utcTimestamp = convertToUTC(currentDate);
+
     // Adjust the UTC offset to -4 hours
-    const utcOffsetHours = -4;
-    currentDate.setHours(currentDate.getHours() + utcOffsetHours);
+    // const utcOffsetHours = -4;
+    // utcTimestamp.setHours(utcTimestamp.getHours());
 
     // Format date in 'YYYY-MM-DD' format
-    formattedDate = currentDate.toISOString().split("T")[0];
+    formattedDate = utcTimestamp.split("T")[0];
+    // formattedDate = currentDate
+    formattedTime = utcTimestamp.split('T')[1].split('.')[0];
 
     // Format time in 'HH:mm:ss' format (24-hour clock)
-    formattedTime = currentDate.toLocaleTimeString("en-US", {
-      hour12: false,
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    });
+    // formattedTime = utcTimestamp.toLocaleTimeString("en-US", {
+    //   hour12: false,
+    //   hour: "2-digit",
+    //   minute: "2-digit",
+    //   second: "2-digit",
+    // });
 
-    console.log(`${formattedDate}, ${formattedTime}`);
+    console.log(`showing origional ${utcTimestamp}, formatted date and time ${formattedDate}, ${formattedTime}`);
   };
 
   const handleSubmit = async (event) => {

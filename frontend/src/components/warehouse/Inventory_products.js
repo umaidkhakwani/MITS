@@ -222,7 +222,7 @@ function Inventory_products(props) {
       }
       InventoryProducts[0].email = email;
       InventoryProducts[0].warehouse = warehouse_name_value;
-      InventoryProducts[0].barcode = 1234;
+      // InventoryProducts[0].barcode = 1234;
 
       console.log("showing product details ", InventoryProducts[0]);
 
@@ -270,6 +270,7 @@ function Inventory_products(props) {
       "retail_price",
       "quantity",
       "SKU",
+      "barcode",
       "weight",
       "size",
       "color",
@@ -377,8 +378,7 @@ function Inventory_products(props) {
                   Object.keys(product).map((property) => {
                     if (
                       property !== "email" &&
-                      property !== "warehouse" &&
-                      property !== "barcode"
+                      property !== "warehouse" 
                     ) {
                       return (
                         <TextField

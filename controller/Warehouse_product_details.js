@@ -13,7 +13,7 @@ const create_warehouse_product_details = async () => {
         weight DECIMAL(10, 2),
         size VARCHAR(255),
         color VARCHAR(255),
-        barcode BIGINT
+        barcode VARCHAR(255)
       );
   `;
   const pool = await connection.getConnection();

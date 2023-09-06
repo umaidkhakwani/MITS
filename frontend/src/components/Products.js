@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
+import moment from "moment-timezone";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
@@ -19,6 +20,7 @@ import ApexChart_2 from "../Charts/Sales_per_day";
 import ReactDOM from "react-dom";
 import Warehouse from "./Warehouse";
 import Warehouse_ftn from "./warehouse/Warehouse_component";
+import Orders from "./Orders";
 
 // import Select, { SelectChangeEvent } from '@mui/material/Select';
 
@@ -45,6 +47,63 @@ export default function Product() {
     },
   ]);
   const [seconds, setSeconds] = useState(0);
+  const [warehouseCreationDate, setWarehouseCreationDate] =
+    useState(/* Set your warehouse creation date here */);
+
+  const [orders, setOrders] = useState();
+  const [filteredOrders, setFilteredOrders] = useState([]);
+
+  useEffect(() => {
+    // Fetch your orders data using Axios here
+    axios
+      .get(API_LINK + "get_all_orders")
+      .then((response) => {
+        // Assuming the data is in response.data
+        setOrders(response.data);
+      })
+      .catch((error) => console.error("Error fetching orders:", error));
+  }, []);
+  // Define the UTC-4 timezone
+
+  const timeZone = "America/New_York";
+  var formattedDate;
+  var formattedTime;
+
+  // useEffect(() => {
+  //   // Convert warehouse creation date to UTC-4
+  //   const utcWarehouseCreationDate = moment(warehouseCreationDate)
+  //     .tz(timeZone)
+  //     .format();
+
+  //   // Filter orders made after the warehouse creation date
+  //   const filtered = orders.filter((order) => {
+  //     const orderDate = moment(order.created_at).tz(timeZone);
+  //     return orderDate.isAfter(utcWarehouseCreationDate);
+  //   });
+
+  //   setFilteredOrders(filtered);
+  // }, [orders, warehouseCreationDate]);
+
+  // const timeSetting = () => {
+  //   const currentDate = new Date();
+
+  //   // Adjust the UTC offset to -4 hours
+  //   const utcOffsetHours = -4;
+  //   currentDate.setHours(currentDate.getHours() + utcOffsetHours);
+
+  //   // Format date in 'YYYY-MM-DD' format
+  //   formattedDate = currentDate.toISOString().split("T")[0];
+
+  //   // Format time in 'HH:mm:ss' format (24-hour clock)
+  //   formattedTime = currentDate.toLocaleTimeString("en-US", {
+  //     hour12: false,
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //     second: "2-digit",
+  //   });
+
+  //   console.log(`${formattedDate}, ${formattedTime}`);
+  // };
 
   const sorting_function = () => {
     if (responseData_orders) {
@@ -90,23 +149,23 @@ export default function Product() {
   async function handle_get_order_data() {
     console.log("showing get order data");
     try {
-      const response = await axios.get(API_LINK + "get_orders");
+      const response = await axios.get(API_LINK + "get_all_orders");
       console.log("data sent from backend :: ", response.data.orders);
       console.log(typeof response.data);
-      if (response.data.orders){
-      setresponseData_orders(
-        response.data.orders
-          .slice()
-          .sort(
-            (a, b) =>
-              b.current_total_price_set.shop_money.amount -
-              a.current_total_price_set.shop_money.amount
-          )
-      );
-      sorting_function(); // Move this line to after setting the state
-          }else{
-            setresponseData_orders(0)
-          }
+      if (response.data.orders) {
+        setresponseData_orders(
+          response.data.orders
+            .slice()
+            .sort(
+              (a, b) =>
+                b.current_total_price_set.shop_money.amount -
+                a.current_total_price_set.shop_money.amount
+            )
+        );
+        sorting_function(); // Move this line to after setting the state
+      } else {
+        setresponseData_orders(0);
+      }
     } catch (error) {
       console.error("Error fetching data:", error);
       // Handle the error
@@ -455,8 +514,9 @@ export default function Product() {
                 <div>
                   {order_options === "get_data" ? (
                     <div>
-                      <ul>
+                      {/* <ul>
                         {Array.isArray(responseData_orders) ? (
+                          
                           responseData_orders.map((order) => (
                             <li key={order.id}>
                               <h3>{order.title}</h3>
@@ -510,10 +570,12 @@ export default function Product() {
                               <p>details: {JSON.stringify(order, null, 2)}</p>
                             </li>
                           ))
+                           
                         ) : (
                           <p>no order available</p>
                         )}
-                      </ul>
+                      </ul> */}
+                      <Orders order_list={responseData_orders}/>
                     </div>
                   ) : (
                     ""
@@ -530,7 +592,7 @@ export default function Product() {
               </div>
             ) : inventory === 51 ? (
               <div>
-              <Warehouse_ftn />
+                <Warehouse_ftn />
                 {/* <SignInSide />
                 <BrowserRouter>
                   <Switch>

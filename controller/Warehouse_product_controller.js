@@ -9,6 +9,7 @@ const create_warehouse_product = async () => {
     warehouse VARCHAR(255) NOT NULL,
     SKU VARCHAR(255) NOT NULL,
     quantity INT,
+    UNIQUE KEY (email, warehouse, SKU),
     FOREIGN KEY (email) REFERENCES warehouse(email) ON DELETE CASCADE,
     FOREIGN KEY (SKU) REFERENCES product_list(SKU)
   );

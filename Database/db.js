@@ -5,7 +5,8 @@ const connection = mysql.createPool({
   user: 'root',
   password: '12345678',
   database: 'mep_store',
-  connectionLimit: 10 // You can adjust the connection limit as needed
+  connectionLimit: 10, // You can adjust the connection limit as needed
+  timezone: 'Z',
 });
 
 module.exports = connection;

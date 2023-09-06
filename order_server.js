@@ -6,6 +6,7 @@ const userModel = require("./Database/userModel");
 const warehouse_model = require("./controller/Warehouse_controller");
 const warehouse_products = require("./controller/Warehouse_product_controller");
 const warehouse_products_details = require("./controller/Warehouse_product_details");
+const transfer_quantity = require("./controller/Transfer")
 
 const shopify = require("shopify-api-node");
 
@@ -63,25 +64,37 @@ app.post("/register", async (req, res) => {
 //----------------------------  Warehouse -------------------------------------------------------------------
 
 warehouse_model.create_warehouse();
+warehouse_products_details.create_warehouse_product_details();
 
 // Registration route
 app.post("/create_warehouse", async (req, res) => {
-  const { email, title, address, city, country, association, date, time } = req.body.product;
-  console.log(`inside create warehouse:: email is : ${email}, date is : ${date}, time is : ${time}, association is : ${association}`);
+  const { email, title, address, city, country, association, date, time } =
+    req.body.product;
+  console.log(
+    `inside create warehouse:: email is : ${email}, date is : ${date}, time is : ${time}, association is : ${association}`
+  );
 
   console.log("showing request body ", req.body);
   let userToken = 0;
   // Insert new user
   try {
-    const new_warehouse = { email, title, address, city, country, association, date, time };
+    const new_warehouse = {
+      email,
+      title,
+      address,
+      city,
+      country,
+      association,
+      date,
+      time,
+    };
     await warehouse_model.insert_warehouse(new_warehouse);
-  
+
     res.status(201).json({ message: "Warehouse created successfully" });
   } catch (error) {
     console.error("Error creating warehouse:", error);
     res.status(500).json({ message: "Error creating warehouse" });
   }
-  
 });
 
 app.post("/get_warehouse", async (req, res) => {
@@ -89,7 +102,7 @@ app.post("/get_warehouse", async (req, res) => {
   console.log("showing email in get warehouse", email);
   try {
     const warehouse_list = await warehouse_model.getUserByEmail(email);
-    // console.log(warehouse_list[0]);
+    console.log(warehouse_list[0]);
 
     // Send the warehouse list in the response
     res.send(warehouse_list[0]);
@@ -105,8 +118,31 @@ app.post("/get_warehouse_specified", async (req, res) => {
   const { email, title } = req.body;
   console.log("showing email in get warehouse", email);
   try {
-    const warehouse_list = await warehouse_model.getUserByEmailandWarehouse(email, title);
+    const warehouse_list = await warehouse_model.getUserByEmailandWarehouse(
+      email,
+      title
+    );
     // console.log(warehouse_list[0]);
+
+    // Send the warehouse list in the response
+    res.send(warehouse_list[0]);
+  } catch (error) {
+    console.error("Error getting warehouse list:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting warehouse list", error: error.message });
+  }
+});
+
+app.post("/get_warehouse_store", async (req, res) => {
+  const { email, association } = req.body;
+  console.log("showing email in get warehouse", email);
+  try {
+    const warehouse_list = await warehouse_model.getUserByEmailandStore(
+      email,
+      association
+    );
+    console.log("showing warehouse in warehouse store ",warehouse_list[0]);
 
     // Send the warehouse list in the response
     res.send(warehouse_list[0]);
@@ -120,9 +156,8 @@ app.post("/get_warehouse_specified", async (req, res) => {
 
 //----------------------------  Warehouse Products -------------------------------------------------------------------
 
-warehouse_products_details.create_warehouse_product_details()
-warehouse_products.create_warehouse_product();
 
+warehouse_products.create_warehouse_product();
 
 // Registration route
 app.post("/create_warehouse_products", async (req, res) => {
@@ -161,7 +196,7 @@ app.post("/create_warehouse_products", async (req, res) => {
     size,
     color,
   };
-  console.log("showing new_warehouse_products ::",new_warehouse_products)
+  console.log("showing new_warehouse_products ::", new_warehouse_products);
   try {
     await warehouse_products.insert_warehouse_product(new_warehouse_products);
 
@@ -179,8 +214,11 @@ app.post("/get_warehouse_products", async (req, res) => {
   console.log("showing email in warehouse products", email);
   console.log("showing warehouse in get warehouse products", warehouse);
   try {
-    const warehouse_list = await warehouse_products.getUserByEmailandWarehouse(email, warehouse);
-    console.log("showing warehouse listttt::",warehouse_list);
+    const warehouse_list = await warehouse_products.getUserByEmailandWarehouse(
+      email,
+      warehouse
+    );
+    console.log("showing warehouse listttt::", warehouse_list);
 
     // Send the warehouse list in the response
     res.send(warehouse_list);
@@ -199,10 +237,32 @@ app.post("/get_all_warehouse_products", async (req, res) => {
   console.log("showing email in warehouse products", email);
   try {
     const warehouse_list = await warehouse_products.getUserByEmail(email);
-    console.log("showing warehouse listttt::",warehouse_list);
+    console.log("showing warehouse listttt::", warehouse_list);
 
     // Send the warehouse list in the response
     res.send(warehouse_list);
+  } catch (error) {
+    console.error("Error getting warehouse list:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting warehouse list", error: error.message });
+  }
+});
+
+//----------------------------  TRANSFER STOCK -------------------------------------------------------------------
+
+app.post("/transfer_quantity", async (req, res) => {
+  const { email, sku, from_warehouse, to_warehouse, quantity } = req.body.transfer[0];
+  console.log(`showing req body in transfer_quantity ${email}, ${sku}, ${from_warehouse}, ${to_warehouse}, ${quantity} `);
+  // console.log("showing req body in transfer_quantity ", req.body);
+
+  // console.log("showing email in warehouse products", email);
+  try {
+    const response = await transfer_quantity.transfer_quantity(email, from_warehouse, quantity,sku,to_warehouse);
+    console.log("showing response ::", response);
+
+    // Send the warehouse list in the response
+    res.send("Successfully transferred");
   } catch (error) {
     console.error("Error getting warehouse list:", error);
     res
@@ -225,9 +285,29 @@ app.get("/getdata", (req, res) => {
   request(get_prod_modified, function (error, response) {
     if (error) throw new Error(error);
     res.send(response.body);
-    console.log(response.body);
+    // console.log(response.body);
   });
 });
+
+app.get("/get_all_orders", (req, res) => {
+  const get_all_orders = {
+    method: "GET",
+    url: `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/orders.json?status=any
+    `,
+    headers: {
+      "Content-type": "application/json",
+    },
+  };
+
+  request(get_all_orders, function (error, response) {
+    if (error) throw new Error(error);
+    const data = JSON.parse(response.body);
+    const formattedData = JSON.stringify(data, null, 4);
+    res.send(formattedData);
+    // console.log(formattedData);
+  });
+});
+
 
 app.get("/get_orders", (req, res) => {
   const get_orders = {
@@ -244,7 +324,7 @@ app.get("/get_orders", (req, res) => {
     const data = JSON.parse(response.body);
     const formattedData = JSON.stringify(data, null, 4);
     res.send(formattedData);
-    console.log(formattedData);
+    // console.log(formattedData);
   });
 });
 
@@ -301,7 +381,10 @@ app.get("/getdata", (req, res) => {
 app.post("/create_product", (req, res) => {
   console.log(req.stringify);
   const productCreateData = req.body.product;
-  console.log("showing req.body create product shopify ::   ", productCreateData);
+  console.log(
+    "showing req.body create product shopify ::   ",
+    productCreateData
+  );
   const createProdModified = {
     method: "POST",
     url: `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/${endpoint}.json
@@ -320,7 +403,7 @@ app.post("/create_product", (req, res) => {
         // product_type: productCreateData.product_type,
         variants: [
           {
-            title: productCreateData.size +" / "+productCreateData.color,
+            title: productCreateData.size + " / " + productCreateData.color,
             price: productCreateData.price,
             sku: productCreateData.sku,
             inventory_management: "shopify",
@@ -335,24 +418,18 @@ app.post("/create_product", (req, res) => {
           {
             name: "Size",
             position: 1,
-            values: [
-              productCreateData.size
-            ]
+            values: [productCreateData.size],
           },
           {
             name: "Color",
             position: 2,
-            values: [
-              productCreateData.color
-            ]
-          }
+            values: [productCreateData.color],
+          },
         ],
-        image: productCreateData.picture_url
+        image: productCreateData.picture_url,
       },
     }),
   };
-
- 
 
   console.log("showing createProdModified ::   ", createProdModified.body);
 

@@ -39,6 +39,7 @@ const insert_warehouse = async (warehouse) => {
 
 // Fetch User by Email
 const getUserByEmail = async (email) => {
+  
   const sql = "SELECT * FROM warehouse WHERE email = ?";
   const pool = await connection.getConnection();
   try {
@@ -58,9 +59,21 @@ const getUserByEmailandWarehouse = async (email, title) => {
     }
   };
 
+  const getUserByEmailandStore = async (email, association) => {
+    const sql = "SELECT * FROM warehouse WHERE email = ? AND association = ?";
+    const pool = await connection.getConnection();
+    try {
+      return await pool.query(sql, [email, association]);
+    } finally {
+      pool.release(); // Release the connection back to the pool
+    }
+  };
+
+
 module.exports = {
   create_warehouse,
   insert_warehouse,
+  getUserByEmailandStore,
   getUserByEmail,
   getUserByEmailandWarehouse,
 };

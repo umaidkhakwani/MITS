@@ -1,4 +1,5 @@
 import {
+  Button,
   Container,
   FormControl,
   InputLabel,
@@ -18,19 +19,16 @@ import {
 } from "@mui/base/Unstable_NumberInput";
 import { styled } from "@mui/system";
 
-
 //----------------------------------------------------------------------------------------------
 
 const StyledInputRoot = styled("div")(
-    ({ theme }) => `
+  ({ theme }) => `
     font-family: IBM Plex Sans, sans-serif;
     font-weight: 400;
     border-radius: 8px;
     color: ${theme.palette.mode === "dark" ? grey[300] : grey[900]};
     background: ${theme.palette.mode === "dark" ? grey[900] : "#fff"};
-    border: 1px solid ${
-      theme.palette.mode === "dark" ? grey[700] : grey[200]
-    };
+    border: 1px solid ${theme.palette.mode === "dark" ? grey[700] : grey[200]};
     box-shadow: 0px 2px 2px ${
       theme.palette.mode === "dark" ? grey[900] : grey[50]
     };
@@ -42,8 +40,8 @@ const StyledInputRoot = styled("div")(
     &.${numberInputClasses.focused} {
       border-color: ${blue[400]};
       box-shadow: 0 0 0 3px ${
-      theme.palette.mode === "dark" ? blue[500] : blue[200]
-    };
+        theme.palette.mode === "dark" ? blue[500] : blue[200]
+      };
     }
   
     &:hover {
@@ -55,10 +53,10 @@ const StyledInputRoot = styled("div")(
       outline: 0;
     }
   `
-  );
-  
-  const StyledInputElement = styled("input")(
-    ({ theme }) => `
+);
+
+const StyledInputElement = styled("input")(
+  ({ theme }) => `
     font-size: 0.875rem;
     font-family: inherit;
     font-weight: 400;
@@ -72,10 +70,10 @@ const StyledInputRoot = styled("div")(
     padding: 8px 12px;
     outline: 0;
   `
-  );
-  
-  const StyledButton = styled("button")(
-    ({ theme }) => `
+);
+
+const StyledButton = styled("button")(
+  ({ theme }) => `
     display: flex;
     flex-flow: row nowrap;
     justify-content: center;
@@ -97,9 +95,7 @@ const StyledInputRoot = styled("div")(
     transition-duration: 120ms;
   
     &:hover {
-      background: ${
-      theme.palette.mode === "dark" ? grey[800] : grey[50]
-    };
+      background: ${theme.palette.mode === "dark" ? grey[800] : grey[50]};
       border-color: ${theme.palette.mode === "dark" ? grey[600] : grey[300]};
       cursor: pointer;
     }
@@ -114,31 +110,28 @@ const StyledInputRoot = styled("div")(
       grid-row: 2/3;
     }
   `
-  );
+);
 
+const blue = {
+  100: "#DAECFF",
+  200: "#80BFFF",
+  400: "#3399FF",
+  500: "#007FFF",
+  600: "#0072E5",
+};
 
-  const blue = {
-    100: "#DAECFF",
-    200: "#80BFFF",
-    400: "#3399FF",
-    500: "#007FFF",
-    600: "#0072E5",
-  };
-  
-  const grey = {
-    50: "#F3F6F9",
-    100: "#E7EBF0",
-    200: "#E0E3E7",
-    300: "#CDD2D7",
-    400: "#B2BAC2",
-    500: "#A0AAB4",
-    600: "#6F7E8C",
-    700: "#3E5060",
-    800: "#2D3843",
-    900: "#1A2027",
-  };
-
-
+const grey = {
+  50: "#F3F6F9",
+  100: "#E7EBF0",
+  200: "#E0E3E7",
+  300: "#CDD2D7",
+  400: "#B2BAC2",
+  500: "#A0AAB4",
+  600: "#6F7E8C",
+  700: "#3E5060",
+  800: "#2D3843",
+  900: "#1A2027",
+};
 
 //-----------------------------------------------------------------------------------------------
 
@@ -148,11 +141,23 @@ var API_LINK = "http://localhost:5000/";
 var sortedCustomers = "";
 
 function Transfer_Stock(props) {
-  const [warehouse_index, set_warehouse_index] = React.useState(0);
-  const [warehouse_index_SKU, set_warehouse_index_SKU] = React.useState(0);
+  const [warehouse_index, set_warehouse_index] = React.useState("");
+  const [warehouse_index_SKU, set_warehouse_index_SKU] = React.useState("");
   const [warehouse_data, set_warehouse_data] = React.useState("");
   const [warehouse_all_data, set_warehouse_all_data] = React.useState([]);
-  const [value, setValue] = useState();
+  const [SKU_quantity, set_SKU_quantity] = React.useState(0);
+  const [value, setValue] = useState(0);
+  const [isTransferSuccessful, setIsTransferSuccessful] = useState(false);
+  const [submit_set, set_submit] = useState(false);
+  const [transfer, set_transfer] = useState([
+    {
+      email: "",
+      sku: "",
+      from_warehouse: "",
+      to_warehouse: "",
+      quantity: 0,
+    },
+  ]);
 
   const warehouse_name_value = props.warehouse_name;
   var email_user = "";
@@ -232,6 +237,11 @@ function Transfer_Stock(props) {
   };
 
   useEffect(() => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        email_user = user.email;
+      }
+    });
     fetch_data();
   }, []);
 
@@ -239,27 +249,125 @@ function Transfer_Stock(props) {
     fetch_warehouse_product_data();
   }, [warehouse_name_value]);
 
+  useEffect(() => {
+    if(isTransferSuccessful){
+    console.log("yayyy")
+    setIsTransferSuccessful(false)
+    fetch_warehouse_product_data();
+    }
+  }, [warehouse_all_data]);
+
+
   const handleChange = (event) => {
-    // console.log("iam in handle change :: ",event.target.value);
-    set_warehouse_index(event.target.value); // Update selected inventory
-    if (event.target.value !== null)
-      console.log(
-        "showing value of menuitem ",
-        warehouse_data[event.target.value]
-      );
+    const selectedValue = event.target.value;
+
+    // Assuming you're using Firebase Auth
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        email_user = user.email
+        console.log("showing user ", email_user)
+        set_warehouse_index(event.target.value); // Update selected inventory
+        if (event.target.value !== null) {
+          console.log(
+            "showing warehouse_data of menuitem ",
+            warehouse_data[event.target.value]
+          );
+          const selectedItem = warehouse_data[event.target.value];
+
+          // Create a copy of the current transfer state
+          const updatedTransfer = [...transfer];
+
+          // Update the sku field of the selected item in the copy
+          updatedTransfer[0].to_warehouse = selectedItem.title;
+          updatedTransfer[0].from_warehouse = warehouse_name_value;
+          updatedTransfer[0].email = email_user;
+
+          // Set the updated copy as the new transfer state
+          set_transfer(updatedTransfer);
+          console.log("showing SKU in loop ", selectedItem.SKU);
+        }
+      }
+    });
   };
 
   const handleChange_SKU = (event) => {
-
-    
     // console.log("iam in handle change :: ",event.target.value);
     set_warehouse_index_SKU(event.target.value); // Update selected inventory
-    if (event.target.value !== null)
+    if (event.target.value !== null) {
       console.log(
         "showing value of menuitem in warehouse all data ",
         warehouse_all_data[event.target.value]
       );
+      set_SKU_quantity(warehouse_all_data[event.target.value].quantity);
+      console.log(
+        "showing quantity ",
+        warehouse_all_data[event.target.value].quantity
+      );
+
+      const selectedItem = warehouse_all_data[event.target.value];
+
+      // Create a copy of the current transfer state
+      const updatedTransfer = [...transfer];
+
+      // Update the sku field of the selected item in the copy
+      updatedTransfer[0].sku = selectedItem.SKU;
+
+      // Set the updated copy as the new transfer state
+      set_transfer(updatedTransfer);
+
+      console.log("showing SKU in loop ", selectedItem.SKU);
+    }
   };
+
+  const handle_quantity = (val) => {
+    // Create a copy of the current transfer state
+    const updatedTransfer = [...transfer];
+
+    // Update the sku field of the selected item in the copy
+    updatedTransfer[0].quantity = val;
+
+    // Set the updated copy as the new transfer state
+    set_transfer(updatedTransfer);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    console.log("showing transfer details ", transfer);
+    axios
+      .post(API_LINK + "transfer_quantity", { transfer })
+      .then((response) => {
+        setIsTransferSuccessful(true)
+        // setProducts(response.data.products);
+        console.log("send data to backend :: ", response.data);
+        // console.log(typeof response.data);
+        // if (response.data) {
+        //   set_warehouse_data(response.data);
+        // }
+      })
+      .catch((err) => console.error(err));
+      set_submit(true)
+      set_transfer([
+        {
+          sku: "",
+          from_warehouse: "",
+          to_warehouse: "",
+          quantity: 0,
+        },
+      ]);
+      set_warehouse_index('');
+      set_warehouse_index_SKU('');
+      setValue(0);
+  };
+
+  useEffect(() => {
+    fetch_warehouse_product_data();
+  }, [warehouse_name_value]);
+
+  useEffect(() => {
+    set_submit(false)
+    setValue(0)
+  
+  }, [transfer]);
 
   return (
     <div>
@@ -277,34 +385,6 @@ function Transfer_Stock(props) {
         })}
       </ul>
 
-      
-    {/* ------------------------------------------------------------------------------------------------ */}
-
-      <NumberInput
-      min={0}
-      max={100}
-      slots={{
-        root: StyledInputRoot,
-        input: StyledInputElement,
-        incrementButton: StyledButton,
-        decrementButton: StyledButton,
-      }}
-      slotProps={{
-        incrementButton: {
-          children: "▴",
-        },
-        decrementButton: {
-          children: "▾",
-        },
-      }}
-      aria-label="Demo number input"
-      placeholder="Type a number…"
-      value={value}
-      onChange={(event, val) => setValue(val)}
-    />
-
-    {/* ------------------------------------------------------------------------------------------------ */}
-
       <Container
         sx={{
           display: "flex",
@@ -313,84 +393,122 @@ function Transfer_Stock(props) {
           height: "100%",
         }}
       >
-        <FormControl sx={{ m: 1, minWidth: 150, margin: "50px" }}>
-          <InputLabel id="demo-simple-select-autowidth-label">
-            Choose Warehouse
-          </InputLabel>
-          <Select
-            labelId="demo-simple-select-autowidth-label"
-            id="demo-simple-select-autowidth"
-            value={warehouse_index}
-            onChange={handleChange}
-            autoWidth
-            label="Inventory"
-            onClick={fetch_data}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            {
-              warehouse_data.length > 0
-                ? warehouse_data.map((warehouse, index) => {
-                    if (warehouse.title !== warehouse_name_value) {
+        <Stack spacing={10}>
+          <form onSubmit={handleSubmit}>
+            <Stack direction="row" spacing={10}>
+              <FormControl sx={{ m: 1, minWidth: 150, margin: "50px" }}>
+                <InputLabel id="demo-simple-select-autowidth-label">
+                  Choose Warehouse
+                </InputLabel>
+                <Select
+                  labelId="demo-simple-select-autowidth-label"
+                  id="demo-simple-select-autowidth"
+                  value={warehouse_index}
+                  onChange={handleChange}
+                  autoWidth
+                  label="Inventory"
+                  onClick={fetch_data}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {
+                    warehouse_data.length > 0
+                      ? warehouse_data.map((warehouse, index) => {
+                          if (warehouse.title !== warehouse_name_value) {
+                            return (
+                              <MenuItem
+                                key={index}
+                                value={index}
+                                onClick={() => {
+                                  handleMenuItemClick(index);
+                                  console.log("showing index in loop ", index);
+                                }} // Changed to an arrow function
+                              >
+                                {warehouse.title}
+                              </MenuItem>
+                            );
+                          }
+                          return null; // Added to handle cases where the condition is not met
+                        })
+                      : null /* Changed empty string to null */
+                  }
+                </Select>
+              </FormControl>
+              <FormControl sx={{ m: 1, minWidth: 150, margin: "50px" }}>
+                <InputLabel id="demo-simple-select-autowidth-label">
+                  Choose SKU
+                </InputLabel>
+                <Select
+                  labelId="demo-simple-select-autowidth-label"
+                  id="demo-simple-select-autowidth"
+                  value={warehouse_index_SKU}
+                  onChange={handleChange_SKU}
+                  autoWidth
+                  label="Inventory"
+                  onClick={fetch_data}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  {warehouse_all_data.map((item, index) => {
+                    if (item.warehouse === warehouse_name_value) {
                       return (
                         <MenuItem
                           key={index}
-                          value={index}
+                          value={index} // Set the SKU as the value
                           onClick={() => {
-                            handleMenuItemClick(index);
-                            console.log("showing index in loop ", index);
-                          }} // Changed to an arrow function
+                            handleMenuItemClick_SKU(index);
+                            console.log("showing SKU in loop ", item.SKU);
+                          }}
                         >
-                          {warehouse.title}
+                          {item.SKU}
                         </MenuItem>
                       );
                     }
-                    return null; // Added to handle cases where the condition is not met
-                  })
-                : null /* Changed empty string to null */
-            }
-          </Select>
-        </FormControl>
-        <FormControl sx={{ m: 1, minWidth: 150, margin: "50px" }}>
-          <InputLabel id="demo-simple-select-autowidth-label">
-            Choose SKU
-          </InputLabel>
-          <Select
-            labelId="demo-simple-select-autowidth-label"
-            id="demo-simple-select-autowidth"
-            value={warehouse_index_SKU}
-            onChange={handleChange_SKU}
-            autoWidth
-            label="Inventory"
-            onClick={fetch_data}
-          >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            {warehouse_all_data.map((item, index) => {
-              if (item.warehouse === warehouse_name_value) {
-                return (
-                  <MenuItem
-                    key={index}
-                    value={index} // Set the SKU as the value
-                    onClick={() => {
-                      handleMenuItemClick_SKU(index);
-                      console.log("showing SKU in loop ", item.SKU);
-                    }}
-                  >
-                    {item.SKU}
-                  </MenuItem>
-                );
-              }
-              return null; // Return null for non-matching warehouses
-            })}
-          </Select>
-        </FormControl>
+                    return ""; // Return null for non-matching warehouses
+                  })}
+                </Select>
+              </FormControl>
+              {/* ------------------------------------------------------------------------------------------------ */}
+
+              <NumberInput
+              key={submit_set}
+                min={0}
+                max={SKU_quantity}
+                slots={{
+                  root: StyledInputRoot,
+                  input: StyledInputElement,
+                  incrementButton: StyledButton,
+                  decrementButton: StyledButton,
+                }}
+                slotProps={{
+                  incrementButton: {
+                    children: "▴",
+                  },
+                  decrementButton: {
+                    children: "▾",
+                  },
+                }}
+                aria-label="Demo number input"
+                placeholder="State the quantity"
+                value={value}
+                onChange={(event, val) => {
+                  setValue(val);
+                  console.log("showing val", val);
+                  handle_quantity(val);
+                }}
+              />
+            </Stack>
+            <Button variant="contained" type="submit">
+              Create
+            </Button>
+          </form>
+        </Stack>
+        {/* ------------------------------------------------------------------------------------------------ */}
       </Container>
     </div>
   );
 }
-
 
 export default Transfer_Stock;
