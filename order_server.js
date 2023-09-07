@@ -273,6 +273,28 @@ app.post("/transfer_quantity", async (req, res) => {
 
 //----------------------------  ORDERS -------------------------------------------------------------------
 
+app.post("/inventory_update", async (req, res) => {
+  const { email, warehouse, sku, quantity } = req.body;
+  console.log(`showing req body in inventory_update ${email}, ${sku}, ${warehouse}, ${quantity} `);
+  // console.log("showing req body in transfer_quantity ", req.body);
+
+  // console.log("showing email in warehouse products", email);
+  // try {
+  //   const response = await transfer_quantity.transfer_quantity(email, from_warehouse, quantity,sku,to_warehouse);
+  //   console.log("showing response ::", response);
+
+  //   // Send the warehouse list in the response
+  //   res.send("Successfully transferred");
+  // } catch (error) {
+  //   console.error("Error getting warehouse list:", error);
+  //   res
+  //     .status(500)
+  //     .json({ message: "Error getting warehouse list", error: error.message });
+  // }
+});
+
+
+
 app.get("/getdata", (req, res) => {
   const get_prod_modified = {
     method: "GET",
