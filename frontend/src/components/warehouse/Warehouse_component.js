@@ -109,6 +109,14 @@ function Warehouse_ftn() {
     set_page_options("create_warehouse");
     console.log("iam in create warehouse");
   };
+
+  const order_placement = () => {
+    set_warehouse_options("place_order");
+    // handle_get_cust_data();
+    set_page_options("create_warehouse");
+    console.log("iam in create warehouse");
+  };
+
   //   async function handle_get_cust_data() {
   //     try {
   //       const response = await axios.get(API_LINK + "create_warehouse");
@@ -245,6 +253,9 @@ function Warehouse_ftn() {
             <Button variant="outlined" onClick={inventory_check}>
               Inventory
             </Button>
+            <Button variant="outlined" onClick={order_placement}>
+              place order
+            </Button>
           </Stack>
         </Box>
         <div>
@@ -348,7 +359,11 @@ function Warehouse_ftn() {
             <div>
               <Inventory_ftn />
             </div>
-          ) : (
+          ) : warehouse_options === "place_order" ? (
+            <div>
+              {/* <Warehouse_orders /> */}
+            </div>
+          ) :(
             ""
           )}
         </div>

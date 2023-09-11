@@ -7,6 +7,7 @@ const warehouse_model = require("./controller/Warehouse_controller");
 const warehouse_products = require("./controller/Warehouse_product_controller");
 const warehouse_products_details = require("./controller/Warehouse_product_details");
 const transfer_quantity = require("./controller/Transfer")
+const warehouse_counter = require("./controller/Warehouse_counter")
 
 const shopify = require("shopify-api-node");
 
@@ -99,10 +100,10 @@ app.post("/create_warehouse", async (req, res) => {
 
 app.post("/get_warehouse", async (req, res) => {
   const { email } = req.body;
-  console.log("showing email in get warehouse", email);
+  // console.log("showing email in get warehouse", email);
   try {
     const warehouse_list = await warehouse_model.getUserByEmail(email);
-    console.log(warehouse_list[0]);
+    // console.log(warehouse_list[0]);
 
     // Send the warehouse list in the response
     res.send(warehouse_list[0]);
@@ -249,6 +250,72 @@ app.post("/get_all_warehouse_products", async (req, res) => {
   }
 });
 
+
+app.post("/inventory_update", async (req, res) => {
+  const { email, warehouse, sku, quantity } = req.body;
+  console.log(`showing req body in inventory_update ${email}, ${sku}, ${warehouse}, ${quantity} `);
+  // console.log("showing req body in transfer_quantity ", req.body);
+
+  // console.log("showing email in warehouse products", email);
+  try {
+    const response = await warehouse_products.change_inventory(email, warehouse, sku, quantity);
+    console.log("showing response ::", response);
+
+    // Send the warehouse list in the response
+    res.send("Successfully updated inventory");
+  } catch (error) {
+    console.error("Error updating inventory:", error);
+    res
+      .status(500)
+      .json({ message: "Error updating inventory", error: error.message });
+  }
+});
+
+
+//----------------------------  WAREHOUSE COUNTER -------------------------------------------------------------------
+warehouse_counter.create_warehouse_counter();
+
+
+app.post("/update_counter", async (req, res) => {
+  const { email,warehouse, counter } = req.body;
+  console.log(`showing req body in update_counter ${email}, ${warehouse}, ${counter} `);
+  // console.log("showing req body in transfer_quantity ", req.body);
+
+  // console.log("showing email in warehouse products", email);
+  try {
+    const response = await warehouse_counter.update_warehouse_counter(email, warehouse, counter);
+    console.log("showing response ::", response);
+
+    // Send the warehouse list in the response
+    res.send("Successfully created");
+  } catch (error) {
+    console.error("Error updating warehouse counter:", error);
+    res
+      .status(500)
+      .json({ message: "Error updating warehouse counter", error: error.message });
+  }
+});
+
+app.post("/get_counter", async (req, res) => {
+  const { email,warehouse, counter } = req.body;
+  console.log(`showing req body in get_counter ${email}, ${warehouse} `);
+  // console.log("showing req body in transfer_quantity ", req.body);
+
+  // console.log("showing email in warehouse products", email);
+  try {
+    const response = await warehouse_counter.getUserByEmail(email, warehouse);
+    console.log("showing response ::", response[0]);
+
+    // Send the warehouse list in the response
+    res.send(response[0]);
+  } catch (error) {
+    console.error("Error getting counter list:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting counter list", error: error.message });
+  }
+});
+
 //----------------------------  TRANSFER STOCK -------------------------------------------------------------------
 
 app.post("/transfer_quantity", async (req, res) => {
@@ -272,27 +339,6 @@ app.post("/transfer_quantity", async (req, res) => {
 });
 
 //----------------------------  ORDERS -------------------------------------------------------------------
-
-app.post("/inventory_update", async (req, res) => {
-  const { email, warehouse, sku, quantity } = req.body;
-  console.log(`showing req body in inventory_update ${email}, ${sku}, ${warehouse}, ${quantity} `);
-  // console.log("showing req body in transfer_quantity ", req.body);
-
-  // console.log("showing email in warehouse products", email);
-  // try {
-  //   const response = await transfer_quantity.transfer_quantity(email, from_warehouse, quantity,sku,to_warehouse);
-  //   console.log("showing response ::", response);
-
-  //   // Send the warehouse list in the response
-  //   res.send("Successfully transferred");
-  // } catch (error) {
-  //   console.error("Error getting warehouse list:", error);
-  //   res
-  //     .status(500)
-  //     .json({ message: "Error getting warehouse list", error: error.message });
-  // }
-});
-
 
 
 app.get("/getdata", (req, res) => {
@@ -407,6 +453,7 @@ app.post("/create_product", (req, res) => {
     "showing req.body create product shopify ::   ",
     productCreateData
   );
+  console.log("saasads", productCreateData.price," sadfssda ",productCreateData.sku )
   const createProdModified = {
     method: "POST",
     url: `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/${endpoint}.json
@@ -426,8 +473,8 @@ app.post("/create_product", (req, res) => {
         variants: [
           {
             title: productCreateData.size + " / " + productCreateData.color,
-            price: productCreateData.price,
-            sku: productCreateData.sku,
+            price: productCreateData.cost_price,
+            sku: productCreateData.SKU,
             inventory_management: "shopify",
             option1: productCreateData.size,
             option2: productCreateData.color,
@@ -453,7 +500,7 @@ app.post("/create_product", (req, res) => {
     }),
   };
 
-  console.log("showing createProdModified ::   ", createProdModified.body);
+  // console.log("showing createProdModified ::   ", createProdModified.body);
 
   request(createProdModified, function (error, response) {
     if (error) throw new Error(error);

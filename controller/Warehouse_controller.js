@@ -29,9 +29,12 @@ const insert_warehouse = async (warehouse) => {
   const { email, title, city, address, country, association,date, time } = warehouse;
   const sql =
     "INSERT INTO warehouse (email, title, city, address, country,association, date, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    const sql2 =
+    "INSERT INTO warehouse_counter (email, warehouse) VALUES (?, ?)";
   const pool = await connection.getConnection();
   try {
     await pool.query(sql, [email, title, address, city, country,association, date, time]);
+    await pool.query(sql2, [email, title]);
   } finally {
     pool.release(); // Release the connection back to the pool
   }

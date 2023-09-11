@@ -9,6 +9,7 @@ const create_warehouse_product = async () => {
     warehouse VARCHAR(255) NOT NULL,
     SKU VARCHAR(255) NOT NULL,
     quantity INT,
+    counter INT DEFAULT 0,
     UNIQUE KEY (email, warehouse, SKU),
     FOREIGN KEY (email) REFERENCES warehouse(email) ON DELETE CASCADE,
     FOREIGN KEY (SKU) REFERENCES product_list(SKU)
@@ -21,6 +22,7 @@ const create_warehouse_product = async () => {
     pool.release(); // Release the connection back to the pool
   }
 };
+
 
 const insert_warehouse_product = async (product) => {
 
@@ -115,9 +117,25 @@ const getUserByEmailandWarehouse = async (email, warehouse) => {
   }
 };
 
+
+const change_inventory = async (email, warehouse, sku, quantity) => {
+  const sql = `
+    UPDATE warehouse_product
+    SET quantity = quantity - ?
+    WHERE email = ? AND warehouse = ? AND SKU = ?
+  `;
+  const pool = await connection.getConnection();
+  try {
+    await pool.query(sql, [quantity, email, warehouse, sku]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
 module.exports = {
   create_warehouse_product,
   insert_warehouse_product,
   getUserByEmailandWarehouse,
   getUserByEmail,
+  change_inventory,
 };

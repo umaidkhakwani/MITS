@@ -12,11 +12,11 @@ const transfer_quantity = async (email, fromWarehouse, quantity, sku, toWarehous
       // Begin a transaction
       await pool.beginTransaction();
 
-      console.log("Debug - email:", email);
-      console.log("Debug - fromWarehouse:", fromWarehouse);
-      console.log("Debug - quantity:", quantity);
-      console.log("Debug - sku:", sku);
-      console.log("Debug - toWarehouse:", toWarehouse);
+      // console.log("Debug - email:", email);
+      // console.log("Debug - fromWarehouse:", fromWarehouse);
+      // console.log("Debug - quantity:", quantity);
+      // console.log("Debug - sku:", sku);
+      // console.log("Debug - toWarehouse:", toWarehouse);
   
       // Step 1: Subtract quantity from 'from_warehouse' for the specified user
       const subtractQuery = `

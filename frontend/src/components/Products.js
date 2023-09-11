@@ -257,7 +257,7 @@ export default function Product() {
   };
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    // const interval = setInterval(() => {
       setSeconds((prevSeconds) => prevSeconds + 1);
       const now = new Date();
       const date_seconds = now.getSeconds();
@@ -273,11 +273,11 @@ export default function Product() {
         console.log("bye");
       }
       console.log("showing page options", page_options);
-    }, 10000); // Call the function every 10 second (1000 milliseconds)
+    // }, 10000); // Call the function every 10 second (1000 milliseconds)
 
-    return () => {
-      clearInterval(interval); // Clean up the interval when the component unmounts
-    };
+    // return () => {
+    //   clearInterval(interval); // Clean up the interval when the component unmounts
+    // };
   }, [page_options]);
 
   return (
@@ -584,7 +584,8 @@ export default function Product() {
               </Container>
             ) : inventory === 31 ? (
               <div>
-                <Customers />
+                {/* <Customers /> */}
+                {/* <Counter /> */}
               </div>
             ) : inventory === 41 ? (
               <div>
