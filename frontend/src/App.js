@@ -15,6 +15,8 @@ import About from "./Registration/About";
 import Analytics from "./components/Analytics";
 import Forget_password from "./Registration/Forget_password";
 import Product from "./components/Products";
+import MiniDrawer from "./Dashboard/Sidebar";
+import Dashboard from "./Dashboard/dashboard";
 
 const App = () => {
   const router = createBrowserRouter(
@@ -25,7 +27,7 @@ const App = () => {
       <Route path="/signup" element = {<SignUp />}/>
       <Route path="/login" element = {<Login />}/>
       <Route path="/forget_pass" element = {<Forget_password />}/>
-      <Route path="/dashboard" element = {<Product />}/>
+      <Route path="/dashboard" element = {<Dashboard />}/>
     </Route>)
   );
 

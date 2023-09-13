@@ -1,7 +1,6 @@
 import * as React from "react";
-import Avatar from "@mui/material/Avatar";
-import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
+import backgroundImage from "../images/login_background.png";
+import MITS_logo from "../images/MITS_logo.png";
 import { useState, useEffect } from "react";
 import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -16,6 +15,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 import firebase_app from "../Firebase/firebase";
 import { getAuth, sendPasswordResetEmail } from "firebase/auth";
+import { Button, Container, CssBaseline } from "@mui/material";
 
 const defaultTheme = createTheme();
 
@@ -88,28 +88,30 @@ export default function Forget_password() {
   };
 
   return (
-    <div>
-      <ThemeProvider theme={defaultTheme}>
-        <Grid container component="main" sx={{ height: "100vh" }}>
-          <CssBaseline />
+
+
+    <ThemeProvider theme={defaultTheme}>
+      <CssBaseline />
+      <Grid
+        container
+        component="main"
+        sx={{
+          height: "100vh",
+          backgroundImage: `url(${backgroundImage})`, // Set your background image URL here
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <Container
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <Grid
-            item
-            xs={false}
-            sm={4}
-            md={7}
-            sx={{
-              backgroundImage:
-                "url(https://source.unsplash.com/random?wallpapers)",
-              backgroundRepeat: "no-repeat",
-              backgroundColor: (t) =>
-                t.palette.mode === "light"
-                  ? t.palette.grey[50]
-                  : t.palette.grey[900],
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-            }}
-          />
-          <Grid
+            id="login-page"
             item
             xs={12}
             sm={8}
@@ -127,23 +129,45 @@ export default function Forget_password() {
                 alignItems: "center",
               }}
             >
-              <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
+              {/* <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
                 <LockOutlinedIcon />
-              </Avatar>
+              </Avatar> */}
+
+              <img
+                id="logo"
+                src={MITS_logo} // Replace with the image URL you want to use
+                alt="MITS logo"
+                // style={{ width: '100px', height: '100px', borderRadius: '50%' }} // Adjust image size and border radius as needed
+              />
+              <Typography
+                id="text"
+                component="h1"
+                variant="h5"
+                sx={{ margin: "10px" }}
+              >
+                Welcome to MITS!!!
+              </Typography>
               <Typography component="h1" variant="h5">
                 Forgotton Password
               </Typography>
               {emailSent ? (
-        <p>An email with reset instructions has been sent to your email address.</p>
-      ) : (
-        <div>
+                  <p>An email with reset instructions has been sent to your email address.</p>
+                ) : (
+                  <div>
               <Box
                 component="form"
                 noValidate
                 onSubmit={handleSubmit}
-                sx={{ mt: 1 }}
+                sx={{
+                  mt: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  width: "100%",
+                }}
               >
                 <TextField
+                  className="custom-textfield"
                   error={!!errors.email}
                   helperText={errors.email}
                   margin="normal"
@@ -156,27 +180,34 @@ export default function Forget_password() {
                   autoFocus
                   value={user_create.email}
                   onChange={(e) => handle_create_user("email", e.target.value)}
+                  
                 />
 
                 <Button
                   type="submit"
-                  fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
+                  sx={{
+                    mt: 3,
+                    mb: 2,
+                    background: "linear-gradient(45deg, #593993, #9319B5)",
+                    boxShadow: "0 3px 5px 2px rgba(147, 25, 181, .3)",
+                    color: "white",
+                  }}
                 >
                   Send
                 </Button>
-                <Grid container>
-                  <Grid item>
-                    <Link to="/signup">Don't have an account? Sign Up</Link>
-                  </Grid>
+                <Grid item xs>
+                  <Link to="/signup" style={{ textAlign: "center" }}>
+                    Don't have an account? Sign Up
+                  </Link>
                 </Grid>
               </Box>
               </div>)}
             </Box>
           </Grid>
-        </Grid>
-      </ThemeProvider>
-    </div>
+        </Container>
+      </Grid>
+    </ThemeProvider>
+
   );
 }

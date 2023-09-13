@@ -1,0 +1,97 @@
+#logo {
+  background: url("../images/MITS_logo.png"), #fff 50% / cover no-repeat;
+}
+
+#signup-logo {
+  background: url("../images/MITS_logo.png"), 50% / cover no-repeat;
+}
+
+#login-page {
+  border-radius: 39px;
+  opacity: 0.8;
+  background: #fff;
+}
+
+#text {
+  color: #593993;
+  font-family: Inter;
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.custom-textfield {
+    border-radius: 14px;
+    background-color: #593993;
+    color: #fff; /* Text color for input text */
+    & .MuiInputLabel-root {
+      color: #fff;
+    }
+    & .MuiInputBase-input {
+        color: #fff; /* Text color for input text (overrides the global setting) */
+    }
+  }
+
+.signup-container1 {
+  box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.75); /* Top and bottom shadows */
+  box-shadow: -4px 0px 18px rgba(0, 0, 0, 0.75); /* Left shadow */
+}
+
+.signup-container2 {
+  box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.75); /* Top and bottom shadows */
+  box-shadow: 4px 0px 18px rgba(0, 0, 0, 0.75); /* Right shadow */
+}
+
+.slider-content{
+    width:50%;
+    height: 80%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.slide-panel{
+    display: flex;
+    align-items: center;
+    width: 25em;
+    height: 25em;
+    overflow-x: scroll;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+}
+
+.prev, .next{
+    width: 2em;
+    height: 2em;
+    cursor: pointer;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    transition: 0.25s;
+}
+
+.prev:hover, .next:hover{
+    transform: scale(1.25);
+}
+
+.prev{
+    background-image: url('../images/prev.png');
+}
+
+
+.next{
+    background-image: url('../images/next.png');
+}
+
+.img-slider{
+    scroll-snap-align: start;
+    min-width: 100%;
+    border-radius: 0.2em;
+    border-radius: 15%;
+    margin-top: 20px;
+}
+
+::-webkit-scrollbar{
+    display: none;
+}
