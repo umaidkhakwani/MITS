@@ -3,6 +3,7 @@ import {
   Button,
   Container,
   FormControl,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
@@ -14,6 +15,8 @@ import ApexChart from "../Charts/Product_stat";
 import ApexChart_2 from "../Charts/Sales_per_day";
 import Sales_per_day from "../Charts/Sales_per_day";
 import Product_stat from "../Charts/Product_stat";
+
+import MITS_gif from "../images/MITS_Logo.gif";
 
 var API_LINK = "http://localhost:5000/";
 var total_orders_count = 0;
@@ -27,10 +30,13 @@ function Analytics() {
   const [topProducts, setTopProducts] = useState([]);
   const [allProducts, setallProducts] = useState([]);
   const [perDaySales, setPerDaySales] = useState({});
-
-
+  const [loading, setLoading] = useState(true); // State to track loading
 
   var productDetails = {};
+  var orderDetails = {};
+  var perDaySalesData = {};
+
+  // Simulate loading perDaySales data
 
   //   responseData_analytics.forEach((analytics) => {
   //     const title = analytics.title;
@@ -68,7 +74,8 @@ function Analytics() {
       calculate_sales(response.data.orders);
       handle_total_orders_count();
       console.log("showing handle total sales ", responseData_analytics);
-      handle_top_products();
+      handle_top_products(response.data.orders);
+      orderDetails = response.data.orders;
       // sorting_function(); // Move this line to after setting the state
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -95,18 +102,19 @@ function Analytics() {
     let total = 0;
     for (const order of orders) {
       const amount = parseFloat(order.total_price_set.shop_money.amount); // Parse the amount as a float
-      console.log(amount);
+      console.log("amount ", amount);
       total += amount; // Add the amount to the totalSales variable
     }
     set_total_sales(total);
   };
 
-  async function handle_top_products() {
+  async function handle_top_products(order_analytics) {
     console.log("iam in handle top producst ", responseData_analytics);
-    if (responseData_analytics) {
+    console.log("iam in handle top producst order_analytics ", order_analytics);
+    if (order_analytics) {
       console.log("iam in handle top producst 2");
 
-      await responseData_analytics.forEach((order) => {
+      await order_analytics.forEach((order) => {
         var quantity_final = 0;
         order.line_items.forEach((item) => {
           const title = item.title;
@@ -165,7 +173,7 @@ function Analytics() {
     // Now sortedProductDetails contains product details sorted by total quantity
     console.log("showing sorted product array ", sortedProductDetails);
     setTopProducts(productDetailsArray.slice(0, 10));
-    setallProducts(productDetailsArray)
+    setallProducts(productDetailsArray);
     console.log("showing top products ", topProducts);
     console.log("showing All products ", sortedProductDetails);
 
@@ -173,10 +181,13 @@ function Analytics() {
   };
 
   const calculatePerDaySales = () => {
-    const perDaySalesData = {};
     var total_value = 0;
-    if (responseData_analytics) {
-      responseData_analytics.forEach((order) => {
+    console.log("showing orderDetails", orderDetails);
+
+    if (orderDetails) {
+      // perDaySalesData = {}
+      // perDaySalesData.length = 0
+      orderDetails.forEach((order) => {
         const date = new Date(order.created_at).toISOString().split("T")[0];
         var totalOrderValue = parseFloat(
           order.current_total_price_set.shop_money.amount
@@ -192,10 +203,27 @@ function Analytics() {
       });
 
       setPerDaySales(perDaySalesData);
-      console.log("showing per day sales ", typeof perDaySales);
+      if (perDaySalesData ) {
+        setLoading(false);
+
+      }
+
+      console.log("showing per day sales ", typeof perDaySalesData);
+      console.log("showing per day sales value", perDaySalesData);
       console.log("showing total sales ", total_value);
     }
   };
+
+  // useEffect(() => {
+  //   console.log("perdaysales 1 :: ", perDaySalesData);
+  //   // Assuming you have an asynchronous operation to fetch perDaySales
+  //   // setTimeout(() => {
+  //   if (perDaySalesData && perDaySalesData.length > 0) {
+  //     console.log("perdaysales :: ", perDaySalesData);
+  //     setLoading(false); // Set loading to false when data is loaded
+  //   }
+  //   // }, 3000); // Simulate loading for 3 seconds
+  // }, [perDaySalesData]);
 
   //   useEffect(() => {
   //     if (responseData_analytics.length > 0) {
@@ -260,21 +288,29 @@ function Analytics() {
   return (
     <div>
       <Container>
-        <h1>hi iam in Analytics</h1>
+        {/* <h1>hi iam in Analytics</h1>
         <Box margin="10px">
           <Stack spacing={2} direction="row" justifyContent="space-evenly">
             <Button variant="outlined" onClick={get_total_sales}>
               Get Total Sales
             </Button>
           </Stack>
-        </Box>
+        </Box> */}
+
         <div>
-          {analytics_options === "get_total_sales" ? (
-            <div>
-              {/* <li>Total sales in pkr: ${totalSales}</li>
+          {/* {analytics_options === "get_total_sales" ? ( */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
+            {/* <li>Total sales in pkr: ${totalSales}</li>
               <br /> */}
 
-              <ul>
+            {/* <ul>
                 <li>
                   <h2> Total sales in pkr: </h2>
                   {total_sales} pkr
@@ -284,21 +320,90 @@ function Analytics() {
                   <h2>Total Orders: </h2> {orders_count}
                 </li>
                 <br />
+              </ul> */}
+            {/* <li> */}
+            {/* <Container> */}
+            {loading ? ( // Render the GIF when loading is true
+              <img
+                src={MITS_gif}
+                alt="Loading..."
+                style={{ width: "100px", height: "100px" }}
+              />
+            ) : (
+              <Grid
+                container
+                spacing={2}
+                direction="row"
+                justifyContent="center"
+                alignItems="center"
+              >
+                <Grid
+                  container
+                  spacing={2}
+                  direction="column"
+                  justifyContent="center"
+                  alignItems="center"
+                  xs={10}
+                >
+                  <Grid item xs={10}>
+                    {perDaySalesData && (
+                      <Sales_per_day
+                        obj_daySales={perDaySales}
+                        name="Per Day Sales"
+                      />
+                    )}
+                  </Grid>
+                  <Grid item xs={10}>
+                    <Product_stat obj1={allProducts} />
+                  </Grid>
+                </Grid>
 
-                <li>
-                  <h2>Top 10 selling products:</h2>
+                <Grid item xs={2}>
+                  <h2
+                    style={{
+                      color: "#593993",
+                      fontStyle: "bold",
+                    }}
+                  >
+                    Top 10 selling products:
+                  </h2>
+
                   {topProducts.map((product, index) => (
-                    <ul>
-                      <li key={index}>
-                        <h3>{product.title}</h3>
-                        <p>Total Quantity Sold: {product.quantity}</p>
-                      </li>
-                    </ul>
+                    <div
+                      key={index}
+                      style={{
+                        color: "#593993",
+                        fontStyle: "bold",
+                      }}
+                    >
+                      <h3 margin="0px">{product.title}</h3>
+                      <p>
+                        Total Quantity Sold: {product.quantity} <br />
+                        Store: {product.quantity}
+                      </p>
+                      <p></p>
+                    </div>
                   ))}
-                </li>
 
-                <br />
-                {/* <li>
+                  {/* <h2>Top 10 selling products:</h2>
+                    {topProducts.map((product, index) => (
+                      <ul>
+                        <li key={index}>
+                          <h3>{product.title}</h3>
+                          <p>Total Quantity Sold: {product.quantity}</p>
+                        </li>
+                      </ul>
+                    ))} */}
+                </Grid>
+              </Grid>
+            )}
+
+            {/* </Container> */}
+
+            {/* </li> */}
+
+            <br />
+            {/* <li>
                   <h2>Each product sold with dates:</h2>
                   {allProducts.map((product, index) => (
                     <ul>
@@ -323,9 +428,9 @@ function Analytics() {
                     </ul>
                   ))}
                 </li> */}
-                <br />
+            <br />
 
-                {/* <li>
+            {/* <li>
                   <h2>Per day sale with dates (in detail):</h2>
                 </li>
                 {Object.entries(perDaySales).map(([date, sales]) => (
@@ -334,17 +439,11 @@ function Analytics() {
                     <p>Total Sales: {sales}</p>
                   </li>
                 ))} */}
-                {perDaySales && (
-                  <Sales_per_day
-                    obj_daySales={perDaySales}
-                    name="Per Day Sales"
-                  />
-                )}
 
-                <Product_stat obj1={allProducts}/>
+            {/* <Product_stat obj1={allProducts} /> */}
 
-                <br />
-                {/* <li>
+            <br />
+            {/* <li>
                   {Array.isArray(responseData_analytics) &&
                   responseData_analytics.length > 0 ? (
                     responseData_analytics.map((analytics) => (
@@ -366,10 +465,10 @@ function Analytics() {
                     <p>no analytics data available</p>
                   )}
                 </li> */}
-              </ul>
+            {/* </ul> */}
 
-              {/* <TableContainer style={{ maxHeight: '58vh', overflowY:'scroll' }}> */}
-              {/* <ul>
+            {/* <TableContainer style={{ maxHeight: '58vh', overflowY:'scroll' }}> */}
+            {/* <ul>
                 {Array.isArray(sortedCustomers) && sortedCustomers.length > 0 ? (
                     sortedCustomers.map((customer) => (
                     <li key={customer.id}>
@@ -399,10 +498,10 @@ function Analytics() {
                   <p>no customer data available</p>
                 )}
               </ul> */}
-            </div>
-          ) : (
+          </div>
+          {/* ) : (
             ""
-          )}
+          )} */}
         </div>
       </Container>
     </div>

@@ -1,4 +1,5 @@
 import {
+  Button,
   Container,
   FormControl,
   InputLabel,
@@ -11,6 +12,7 @@ import ReactApexChart from "react-apexcharts";
 function Product_stat(props) {
   const [inventory, setInventory] = useState("");
   const [selectedItemIndex, setSelectedItemIndex] = useState(null); // State to store the selected index
+  const [displayRange, setdisplayRange] = useState("Unit");
 
   const topProducts = props.obj1;
   //   console.log("showing obj1 ", props.obj1);
@@ -34,14 +36,27 @@ function Product_stat(props) {
     const product = topProducts[selectedItemIndex];
     console.log(`Product: ${product.title}`);
     console.log(`Quantity: ${product.quantity}`);
+    console.log(`product detail: ${product}`);
 
-    console.log("Created At:");
-    for (let j = 0; j < product.created_at.length; j++) {
-      const lineItem = product.line_items[j];
-      const createdAt = product.created_at[j];
-      console.log(createdAt);
-      console.log(`Title: ${lineItem.title}, Quantity: ${lineItem.quantity}`);
-      resultArray.push({ x: createdAt, y: lineItem.quantity });
+    if (displayRange === "Unit") {
+      console.log("Created At:");
+      for (let j = 0; j < product.created_at.length; j++) {
+        const lineItem = product.line_items[j];
+        const createdAt = product.created_at[j];
+        console.log(createdAt);
+        console.log(`Title: ${lineItem.title}, Quantity: ${lineItem.quantity}`);
+        resultArray.push({ x: createdAt, y: lineItem.quantity });
+      }
+    } else {
+      console.log("Created At:");
+      for (let j = 0; j < product.created_at.length; j++) {
+        const lineItem = product.line_items[j];
+        const createdAt = product.created_at[j];
+        console.log(createdAt);
+        let total = (lineItem.quantity * lineItem.price).toFixed(2)
+        console.log(`Title: ${lineItem.title}, Sales: ${total}`);
+        resultArray.push({ x: createdAt, y: total });
+      }
     }
     setData(resultArray);
   };
@@ -105,6 +120,14 @@ function Product_stat(props) {
 
   return (
     <div id="chart">
+      <div>
+        <Button variant="outlined" onClick={() => setdisplayRange("Unit")}>
+          By Units
+        </Button>
+        <Button variant="outlined" onClick={() => setdisplayRange("Sales")}>
+          By Sales
+        </Button>
+      </div>
       <Container
         sx={{
           display: "flex",
@@ -145,7 +168,7 @@ function Product_stat(props) {
         series={[{ data: data }]}
         type="bar"
         height={380}
-        width={1000}
+        width={900}
       />
     </div>
   );
