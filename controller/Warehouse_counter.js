@@ -7,8 +7,9 @@ const create_warehouse_counter = async () => {
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
     warehouse VARCHAR(255) NOT NULL,
-    counter INT DEFAULT 0
-    );
+    counter INT DEFAULT 0,
+    FOREIGN KEY (email) REFERENCES warehouse(email) ON DELETE CASCADE
+  );
   `;
   const pool = await connection.getConnection();
   try {
@@ -19,7 +20,6 @@ const create_warehouse_counter = async () => {
 };
 
 const insert_warehouse_counter = async (warehouse, counter, email) => {
- 
   const sql =
     "INSERT INTO warehouse_counter (email, warehouse, counter) VALUES (?, ?, ?)";
   const pool = await connection.getConnection();
@@ -31,20 +31,20 @@ const insert_warehouse_counter = async (warehouse, counter, email) => {
 };
 
 const update_warehouse_counter = async (email, warehouse, counter) => {
-    const sql =
-      "UPDATE warehouse_counter SET counter = ? WHERE email = ? AND warehouse = ?";
-    const pool = await connection.getConnection();
-    try {
-      await pool.query(sql, [counter, email, warehouse]);
-    } finally {
-      pool.release(); // Release the connection back to the pool
-    }
-  };
-  
+  const sql =
+    "UPDATE warehouse_counter SET counter = ? WHERE email = ? AND warehouse = ?";
+  const pool = await connection.getConnection();
+  try {
+    await pool.query(sql, [counter, email, warehouse]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
 
 // Fetch User by Email
 const getUserByEmail = async (email, warehouse) => {
-  const sql = "SELECT * FROM warehouse_counter WHERE email = ? AND warehouse = ?";
+  const sql =
+    "SELECT * FROM warehouse_counter WHERE email = ? AND warehouse = ?";
   const pool = await connection.getConnection();
   try {
     return await pool.query(sql, [email, warehouse]);
@@ -64,9 +64,9 @@ const getUserByEmail = async (email, warehouse) => {
 // };
 
 module.exports = {
-    create_warehouse_counter,
-    insert_warehouse_counter,
-    update_warehouse_counter,
+  create_warehouse_counter,
+  insert_warehouse_counter,
+  update_warehouse_counter,
   //   getUserByEmailandWarehouse,
   getUserByEmail,
 };

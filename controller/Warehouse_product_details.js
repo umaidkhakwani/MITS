@@ -69,6 +69,16 @@ const getUserByEmail = async (email) => {
   }
 };
 
+const get_all_details = async () => {
+  const sql = "SELECT * FROM product_list";
+  const pool = await connection.getConnection();
+  try {
+    return await pool.query(sql);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
 // const getUserByEmailandWarehouse = async (email, warehouse) => {
 //   const sql = "SELECT * FROM product_list WHERE email = ? AND warehouse = ?";
 //   const pool = await connection.getConnection();
@@ -84,4 +94,5 @@ module.exports = {
   insert_warehouse_product_details,
 //   getUserByEmailandWarehouse,
   getUserByEmail,
+  get_all_details,
 };

@@ -28,6 +28,7 @@ const App = () => {
       <Route path="/login" element = {<Login />}/>
       <Route path="/forget_pass" element = {<Forget_password />}/>
       <Route path="/dashboard" element = {<Dashboard />}/>
+      {/* <Route path="/dashboard" element = {<Dashboard />}/> */}
     </Route>)
   );
 

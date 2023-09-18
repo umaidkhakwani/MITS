@@ -155,6 +155,29 @@ app.post("/get_warehouse_store", async (req, res) => {
   }
 });
 
+
+
+//----------------------------  Warehouse Products Details -------------------------------------------------------------------
+
+app.get("/get_all_products_detail", async (req, res) => {
+  // const { email } = req.body;
+  // console.log("showing req body  in get warehouse products", req.body);
+
+  // console.log("showing email in warehouse products", email);
+  try {
+    const warehouse_list = await warehouse_products_details.get_all_details();
+    console.log("showing warehouse listttt::", warehouse_list);
+
+    // Send the warehouse list in the response
+    res.send(warehouse_list);
+  } catch (error) {
+    console.error("Error getting product details:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting product details", error: error.message });
+  }
+});
+
 //----------------------------  Warehouse Products -------------------------------------------------------------------
 
 

@@ -7,6 +7,7 @@ import {
   FormControlLabel,
   FormGroup,
   FormLabel,
+  Grid,
   InputLabel,
   MenuItem,
   Radio,
@@ -14,6 +15,7 @@ import {
   Select,
   Stack,
   TextField,
+  Typography,
 } from "@mui/material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -22,6 +24,8 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Inventory_ftn from "./Inventory";
 import Transfer_Stock from "./Transfer_Stock";
 import convertToUTC from "../UTC_converter";
+import Dashboard_Cards from "../../containers/cards";
+import Warehouse_list from "./Warehouse_list";
 
 const auth = getAuth(firebase_app);
 
@@ -32,7 +36,10 @@ var formattedTime;
 
 function Warehouse_create() {
   const [form_validity, set_form_validity] = useState(false);
-  const [selectedStores, setSelectedStores] = useState([]);
+  const [selectedStores, setSelectedStores] = useState(["other"]);
+  const [page_options, set_page_options] = useState("create_warehouse");
+  const [warehouse_options, set_warehouse_options] = useState("create_warehouse");
+
   const [warehouse_create, setwarehouse_create] = useState([
     {
       email: "",
@@ -56,6 +63,19 @@ function Warehouse_create() {
     console.log("into shopify store");
   };
 
+  const create_warehouse = () => {
+    set_warehouse_options("create_warehouse");
+    // handle_get_cust_data();
+    set_page_options("create_warehouse");
+    console.log("iam in create warehouse");
+  };
+
+  const inventory_check = () => {
+    set_warehouse_options("inventory");
+    // handle_get_cust_data();
+    set_page_options("create_warehouse");
+    console.log("iam in create warehouse");
+  };
   const displaySelectedStores = () => {
     console.log("stores", selectedStores);
 
@@ -65,7 +85,6 @@ function Warehouse_create() {
       console.log("selected store == other");
       // WooCommerceFunction();
     }
-
   };
   const handle_create_warehouse = (field, value) => {
     setwarehouse_create((prevItem) => ({
@@ -76,20 +95,36 @@ function Warehouse_create() {
   };
 
   const isFormValid = () => {
-    if (
-      warehouse_create.title !== "" &&
-      warehouse_create.address !== "" &&
-      warehouse_create.city !== "" &&
-      warehouse_create.country !== ""
-    ) {
-      set_form_validity(true);
-      console.log("showing form validity", form_validity);
-      console.log(warehouse_create);
-    } else {
-      set_form_validity(false);
-      console.log("showing form validity", form_validity);
+    const requiredProperties = ["title", "address", "city", "country"];
+    for (const property of requiredProperties) {
+      if (!warehouse_create[property]) {
+        console.log(`property is ${property} :: ${warehouse_create[property]}`);
+        set_form_validity(false);
+        console.log("showing form validity", form_validity);
+        return;
+      }
+      console.log(
+        `in true ,property is ${property} :: ${warehouse_create[property]}`
+      );
     }
+
+    set_form_validity(true);
+    console.log("showing form validity", form_validity);
   };
+  // if (
+  //   warehouse_create.title !== "" &&
+  //   warehouse_create.address !== "" &&
+  //   warehouse_create.city !== "" &&
+  //   warehouse_create.country !== ""
+  // ) {
+  //   set_form_validity(true);
+  //   console.log("showing form validity", form_validity);
+  //   console.log("showing ----------- ",warehouse_create.title);
+  // } else {
+  //   set_form_validity(false);
+  //   console.log("showing form validity", form_validity);
+  // }
+  //   };
 
   const timeSetting = () => {
     const currentDate = new Date();
@@ -161,14 +196,39 @@ function Warehouse_create() {
     }
   };
 
-
   return (
     <div>
-      <Container sx={{height:"100%"}}>
-        <h1>Add your Warehouse</h1>
+      <Container sx={{ height: "88vh" }}>
+        <Box margin="10px">
+          <Stack spacing={2} direction="row" justifyContent="end">
+            <Button variant="outlined" onClick={create_warehouse} sx={{ color: '#593993',borderColor: '#593993' }}>
+              Create Warehouse
+            </Button>
+            <Button variant="outlined" onClick={inventory_check} sx={{ color: '#593993',borderColor: '#593993' }}>
+              Inventory
+            </Button>
+          </Stack>
+        </Box>
 
-        <div>
-          <div>
+        {warehouse_options === "create_warehouse" ? (
+            <Grid
+          container
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <Typography
+            sx={{
+              color: "#593993",
+              fontWeight: "bold",
+              fontSize: "28px",
+              marginTop:"20px",
+            }}
+          >
+            Add your Warehouse
+          </Typography>
+
+          {/* <div>
             <FormControl>
               <FormLabel id="demo-row-radio-buttons-group-label">
                 Choose Store
@@ -198,70 +258,110 @@ function Warehouse_create() {
                 />
               </RadioGroup>
             </FormControl>
-          </div>
-          <ul>
-            <form onSubmit={handleSubmit}>
-              <Stack direction="column" spacing={4}>
-                <TextField
-                  id="standard-basic-1"
-                  label="Title e.g (Amanah Mall warehouse)"
-                  variant="standard"
-                  value={warehouse_create.title}
-                  onChange={(e) =>
-                    handle_create_warehouse("title", e.target.value)
-                  }
-                  required
-                />
-                <TextField
-                  id="standard-basic-1"
-                  label="Address e.g (Model town link road)"
-                  variant="standard"
-                  value={warehouse_create.vendor}
-                  onChange={(e) => {
-                    handle_create_warehouse("address", e.target.value);
-                    isFormValid();
-                  }}
-                  required
-                />
-                <TextField
-                  id="standard-basic-1"
-                  label="City"
-                  variant="standard"
-                  value={warehouse_create.price}
-                  onChange={(e) => {
-                    handle_create_warehouse("city", e.target.value);
-                    isFormValid();
-                  }}
-                  required
-                />
-                <TextField
-                  id="standard-basic-1"
-                  label="Country"
-                  variant="standard"
-                  value={warehouse_create.sku}
-                  onChange={(e) => {
-                    handle_create_warehouse("country", e.target.value);
-                    isFormValid();
-                  }}
-                  required
-                />
-                {form_validity ? (
-                  <Button variant="contained" type="submit">
-                    Create
-                  </Button>
-                ) : (
-                  <Button
-                    variant="contained"
-                    // onClick={handleSubmit}
-                    disabled={!form_validity}
-                  >
-                    Create
-                  </Button>
-                )}
-              </Stack>
-            </form>
-          </ul>
-        </div>
+          </div> */}
+
+          <Grid item lg={6} sx={{ width: "50%" }}>
+            <ul>
+              <form onSubmit={handleSubmit}>
+                <Stack
+                  direction="column"
+                  spacing={4}
+                  sx={{ justifyContent: "center", alignItems: "center" }}
+                >
+                  <TextField
+                    id="standard-basic-1"
+                    label="Title e.g (Amanah Mall warehouse)"
+                    variant="standard"
+                    value={warehouse_create.title}
+                    onChange={(e) =>
+                      handle_create_warehouse("title", e.target.value)
+                    }
+                    required
+                    sx={{ width: "100%" }}
+                  />
+                  <TextField
+                    id="standard-basic-1"
+                    label="Address e.g (Model town link road)"
+                    variant="standard"
+                    value={warehouse_create.vendor}
+                    onChange={(e) => {
+                      handle_create_warehouse("address", e.target.value);
+                      isFormValid();
+                    }}
+                    required
+                    sx={{ width: "100%" }}
+                  />
+                  <TextField
+                    id="standard-basic-1"
+                    label="City"
+                    variant="standard"
+                    value={warehouse_create.price}
+                    onChange={(e) => {
+                      handle_create_warehouse("city", e.target.value);
+                      isFormValid();
+                    }}
+                    required
+                    sx={{ width: "100%" }}
+                  />
+                  <TextField
+                    id="standard-basic-1"
+                    label="Country"
+                    variant="standard"
+                    value={warehouse_create.sku}
+                    onChange={(e) => {
+                      handle_create_warehouse("country", e.target.value);
+                      isFormValid();
+                    }}
+                    required
+                    sx={{ width: "100%" }}
+                  />
+                  {form_validity ? (
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      sx={{
+                        mt: 3,
+                        mb: 2,
+                        background: "linear-gradient(45deg, #593993, #9319B5)",
+                        boxShadow: "0 3px 5px 2px rgba(147, 25, 181, .3)",
+                        color: "white",
+                        width: "50%",
+                        borderRadius: "12px",
+                      }}
+                    >
+                      Create
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      sx={{
+                        mt: 3,
+                        mb: 2,
+                        background: "linear-gradient(45deg, #593993, #9319B5)",
+                        boxShadow: "0 3px 5px 2px rgba(147, 25, 181, .3)",
+                        color: "white",
+                        width: "50%",
+                        borderRadius: "12px",
+                      }}
+                      // onClick={handleSubmit}
+                      disabled={!form_validity}
+                    >
+                      Create
+                    </Button>
+                  )}
+                </Stack>
+              </form>
+            </ul>
+          </Grid>
+        </Grid>
+        ):(
+            <div>
+            <Dashboard_Cards />
+            <Warehouse_list />
+            </div>
+        )}
+
+        
       </Container>
     </div>
   );

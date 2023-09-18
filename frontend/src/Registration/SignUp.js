@@ -18,13 +18,17 @@ import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import firebase_app from "../Firebase/firebase";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import axios from "axios";
 import { Container, Stack } from "@mui/material";
 import ImageSlider from "./imageSlider";
 import "../css/styles.css";
 
+import firebase_app from "../Firebase/firebase";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
+
+const auth = getAuth(firebase_app);
+var API_LINK = "http://localhost:5000/";
 
 // function Copyright(props) {
 //   return (
@@ -60,8 +64,6 @@ export default function SignUp() {
   });
   const [checkboxChecked, setCheckboxChecked] = useState(false);
 
-  const auth = getAuth(firebase_app);
-  var API_LINK = "http://localhost:5000/";
 
   const handle_create_user = (field, value) => {
     // setInventory(event.target.value);
