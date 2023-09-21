@@ -4,11 +4,18 @@ import Warehouse_list from "../components/warehouse/Warehouse_list";
 import axios from "axios";
 import { Button, Grid, Input } from "@mui/material";
 import EditDialog from "./Verify";
+import firebase_app from "../Firebase/firebase";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import Update_warehouse_info from "../components/warehouse/Update_warehouse_info";
+import CSVFileUploader from "./Import_csv";
+
+const auth = getAuth(firebase_app);
 
 var API_LINK = "http://localhost:5000/";
 
 function List_ftn(props) {
   const { combinedData } = props;
+  const { data_warehouse } = props;
   const [selectedRows, setSelectedRows] = useState([]);
   const [product_details, setproduct_details] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -17,8 +24,10 @@ function List_ftn(props) {
   const [changeList, setchangeList] = useState("");
 
   const [isDialogOpen, setIsDialogOpen] = useState(false); // State for dialog visibility
-  const [editedEmail, setEditedEmail] = useState(""); // State to store edited email
-  const [editedPassword, setEditedPassword] = useState(""); // State to store edited password
+  const [edit_fields, setedit_fields] = useState(false); // State for dialog visibility
+  const [showUploader, setShowUploader] = useState(false);
+  // const [editedEmail, setEditedEmail] = useState(""); // State to store edited email
+  // const [editedPassword, setEditedPassword] = useState(""); // State to store edited password
 
   const fetchProductDetails = async () => {
     console.log("into fetchProductDetails");
@@ -53,10 +62,12 @@ function List_ftn(props) {
     // fetchProductDetails();
 
     console.log(item); // Log the values in the row
+
     setchangeList(item);
     setSelectedRows("");
+    console.log("combinedData showing", combinedData);
     // Filter the data based on the clicked item's title
-    const filtered = combinedData.filter(
+    const filtered = data_warehouse.filter(
       (dataItem) => dataItem.title === item.title
     );
     console.log("filtered ", filtered);
@@ -115,6 +126,38 @@ function List_ftn(props) {
     // }
   };
 
+  const handleDeleteClick = () => {
+    setIsDialogOpen(true); // Open the dialog
+  };
+
+  const handleDialogDelete = async (user_email, password) => {
+    // Save the edited email and password
+    // console.log("Edited Email:", user_email);
+    // console.log("Edited Password:", password);
+    // // You can perform further actions here with the edited values
+    // handleDialogClose(); // Close the dialog
+    // const user = auth.currentUser;
+    // var current_email = "";
+    // if (user) {
+    //   current_email = user.email;
+    //   console.log("showing currect_email", current_email);
+    //   if (current_email == user_email) {
+    //     console.log("yayyy");
+    //     try {
+    //       await signInWithEmailAndPassword(auth, user_email, password);
+    //       console.log("User logged in successfully!");
+    //       alert("User Verified");
+    //       setedit_fields(true);
+    //     } catch (error) {
+    //       console.error(error.message);
+    //       alert("Incorrect email/password");
+    //     }
+    //   } else {
+    //     alert("Incorrect email");
+    //   }
+    // }
+  };
+
   const handleEditClick = () => {
     setIsDialogOpen(true); // Open the dialog
   };
@@ -123,13 +166,47 @@ function List_ftn(props) {
     setIsDialogOpen(false); // Close the dialog
   };
 
-  const handleDialogSave = () => {
-    // Save the edited email and password user_email, password
-    console.log("Edited Email:", editedEmail);
-    console.log("Edited Password:", editedPassword);
+  const handle_edit_fields = (value) => {
+    console.log("showing value", value);
+    setedit_fields(value); // Close the dialog
+  };
+
+  const handleDialogSave = async (user_email, password) => {
+    // Save the edited email and password
+    console.log("Edited Email:", user_email);
+    console.log("Edited Password:", password);
     // You can perform further actions here with the edited values
     handleDialogClose(); // Close the dialog
+
+    const user = auth.currentUser;
+    var current_email = "";
+    if (user) {
+      current_email = user.email;
+      console.log("showing currect_email", current_email);
+      if (current_email == user_email) {
+        console.log("yayyy");
+        try {
+          await signInWithEmailAndPassword(auth, user_email, password);
+          console.log("User logged in successfully!");
+          alert("User Verified");
+          setedit_fields(true);
+        } catch (error) {
+          console.error(error.message);
+          alert("Incorrect email/password");
+        }
+      } else {
+        alert("Incorrect email");
+      }
+    }
   };
+
+  // ------------------------ IMPORT -----------------------------------------------
+
+  const handle_import = () => {
+    setShowUploader(true);
+  };
+
+  // -------------------------------------------------------------------------------
 
   useEffect(() => {
     fetchProductDetails();
@@ -140,6 +217,35 @@ function List_ftn(props) {
       {changeList ? (
         <div>
           <h2>New Data</h2>
+          <div>
+            <Button
+              variant="outlined"
+              sx={{
+                color: "#593993",
+                borderColor: "#593993",
+                margin: "20px",
+              }}
+              // disabled={selectedRows.length > 1 || selectedRows.length < 1}
+              onClick={handle_import}
+            >
+              Import
+            </Button>
+            {showUploader && <CSVFileUploader />}{" "}
+            {/* Conditionally render CSVFileUploader */}
+            <Button
+              variant="outlined"
+              sx={{
+                color: "#593993",
+                borderColor: "#593993",
+                margin: "20px",
+              }}
+              // disabled={selectedRows.length > 1 || selectedRows.length < 1}
+              // onClick={handleEditClick}
+            >
+              Export
+            </Button>
+          </div>
+
           <table
             style={{
               borderCollapse: "collapse",
@@ -195,9 +301,22 @@ function List_ftn(props) {
         <div>
           <h2>Combined Data</h2>
           <div>
+            {edit_fields ? (
+              <Update_warehouse_info
+                row={combinedData[selectedRows[0]]}
+                onsubmitting={handle_edit_fields}
+              />
+            ) : (
+              ""
+            )}
+            <Grid container direction="row">
+              <Grid item lg={12}></Grid>
+            </Grid>
+          </div>
+          <div>
             <Grid container direction="row">
               <Grid item lg={12}>
-                {/* Step 2: Search bar */}
+                {/*  Search bar */}
                 <Input
                   type="text"
                   style={{
@@ -209,7 +328,7 @@ function List_ftn(props) {
                   }}
                   placeholder="Search..."
                   value={searchQuery}
-                  onChange={handleSearch} // Step 3: Bind search input to state
+                  onChange={handleSearch} //  Bind search input to state
                 />
 
                 <Button
@@ -219,7 +338,7 @@ function List_ftn(props) {
                     borderColor: "#593993",
                     margin: "20px",
                   }}
-                  disabled={selectedRows.length > 1}
+                  disabled={selectedRows.length > 1 || selectedRows.length < 1}
                   onClick={handleEditClick}
                 >
                   Edit
@@ -231,6 +350,7 @@ function List_ftn(props) {
                     borderColor: "#593993",
                     margin: "20px",
                   }}
+                  onClick={handleDeleteClick}
                 >
                   Delete
                 </Button>
@@ -261,7 +381,7 @@ function List_ftn(props) {
             </thead>
             <tbody>
               {combinedData
-                .filter(filterRows) // Step 5: Filter rows based on search query
+                .filter(filterRows) //  Filter rows based on search query
                 .map((item, index) => (
                   <tr
                     key={index}

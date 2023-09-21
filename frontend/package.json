@@ -17,6 +17,7 @@
     "firebase": "^10.2.0",
     "mdb-react-ui-kit": "^6.3.0",
     "moment-timezone": "^0.5.43",
+    "papaparse": "^5.4.1",
     "react": "^18.2.0",
     "react-apexcharts": "^1.4.1",
     "react-bootstrap": "^2.8.0",
