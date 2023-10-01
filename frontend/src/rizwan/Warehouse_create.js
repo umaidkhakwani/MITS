@@ -38,8 +38,8 @@ var formattedTime;
 function Warehouse_create() {
   const [form_validity, set_form_validity] = useState(false);
   const [selectedStores, setSelectedStores] = useState(["other"]);
-  const [page_options, set_page_options] = useState("inventory");
-  const [warehouse_options, set_warehouse_options] = useState("inventory");
+  const [page_options, set_page_options] = useState("create_warehouse");
+  const [warehouse_options, set_warehouse_options] = useState("create_warehouse");
 
   const [warehouse_create, setwarehouse_create] = useState([
     {
@@ -355,13 +355,12 @@ function Warehouse_create() {
             </ul>
           </Grid>
         </Grid>
-        ):(warehouse_options === "inventory" ? (
+        ):(
             <div>
             <Inventory_warehouse />
-            {/* <Dashboard_Cards />
-            <Warehouse_list /> */}
+             {/* <Dashboard_Cards />
+             <Warehouse_list /> */}
             </div>
-        ):("")
         )}
 
         

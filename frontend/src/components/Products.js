@@ -13,7 +13,7 @@ import {
   TextField,
 } from "@mui/material";
 import axios from "axios";
-import Customers from "./Customers";
+import Customers from "./customers/Customers";
 import Analytics from "./Analytics";
 import ApexChart from "../Charts/Product_stat";
 import ApexChart_2 from "../Charts/Sales_per_day";

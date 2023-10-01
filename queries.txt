@@ -1,0 +1,3 @@
+1) Change textfields in Create PO
+2) implement props callback in add purchase order. because when a person clicks on create PO he cant shift to add PO. The user has to click on add supplier and then add PO. 
+3) POS backend

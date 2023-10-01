@@ -6,8 +6,9 @@ const userModel = require("./Database/userModel");
 const warehouse_model = require("./controller/Warehouse_controller");
 const warehouse_products = require("./controller/Warehouse_product_controller");
 const warehouse_products_details = require("./controller/Warehouse_product_details");
-const transfer_quantity = require("./controller/Transfer")
-const warehouse_counter = require("./controller/Warehouse_counter")
+const transfer_quantity = require("./controller/Transfer");
+const warehouse_counter = require("./controller/Warehouse_counter");
+const supplier_model = require("./controller/Suppliers_controller");
 
 const shopify = require("shopify-api-node");
 
@@ -62,6 +63,81 @@ app.post("/register", async (req, res) => {
   res.status(201).json({ message: "User registered successfully" });
 });
 
+// get user route
+app.post("/get_user", async (req, res) => {
+  const { email } = req.body;
+
+  console.log("showing email in get user", email);
+  // console.log("showing req body in get user", req.body);
+
+
+  // Check if user already exists
+  const existingUser = await userModel.getUserByEmail(email);
+  if (existingUser[0].length > 0) {
+    // return res
+    //   .status(409)
+    //   .json({ message: "User with this email already exists" });
+    console.log("showing existing user", existingUser[0]);
+    res.send(existingUser[0]);
+  }
+  console.log("error fetching user");
+});
+
+
+//----------------------------  Supplier -------------------------------------------------------------------
+
+supplier_model.create_supplier();
+
+// Create Supplier
+app.post("/create_supplier", async (req, res) => {
+  if (req.body.supplier) {
+    const {
+      name,
+      email,
+      phone_number,
+      // company,
+      category,
+      city,
+      address,
+      country,
+    } = req.body.supplier;
+    console.log(
+      `inside create supplier:: email is : ${email}, phone_number is : ${phone_number}`
+    );
+    // console.log("showing supplier request body ", req.body.supplier);
+    let existingUser ="";
+    let company ="";
+    try{
+      existingUser = await userModel.getUserByEmail(email);
+      console.log("showing existing user", existingUser[0][0].company);
+      company = existingUser[0][0].company;
+    }catch{
+      console.log("error fetching user in suppliers");
+    }
+
+    // Insert new user
+    try {
+      const new_supplier = {
+        name,
+        email,
+        phone_number,
+        company,
+        category,
+        city,
+        address,
+        country,
+      };
+      // console.log("showing new supplier", new_supplier);
+      await supplier_model.insert_supplier(new_supplier);
+
+      res.send("suppllier created successfully");
+    } catch (error) {
+      console.error("Error creating suppllier:", error);
+      // res.status(500).json({ message: "Error creating suppllier" });
+    }
+  }
+});
+
 //----------------------------  Warehouse -------------------------------------------------------------------
 
 warehouse_model.create_warehouse();
@@ -75,7 +151,7 @@ app.post("/create_warehouse", async (req, res) => {
     `inside create warehouse:: email is : ${email}, date is : ${date}, time is : ${time}, association is : ${association}`
   );
 
-  console.log("showing request body ", req.body);
+  // console.log("showing request body ", req.body);
   let userToken = 0;
   // Insert new user
   try {
@@ -143,7 +219,7 @@ app.post("/get_warehouse_store", async (req, res) => {
       email,
       association
     );
-    console.log("showing warehouse in warehouse store ",warehouse_list[0]);
+    // console.log("showing warehouse in warehouse store ", warehouse_list[0]);
 
     // Send the warehouse list in the response
     res.send(warehouse_list[0]);
@@ -155,8 +231,6 @@ app.post("/get_warehouse_store", async (req, res) => {
   }
 });
 
-
-
 //----------------------------  Warehouse Products Details -------------------------------------------------------------------
 
 app.get("/get_all_products_detail", async (req, res) => {
@@ -164,9 +238,41 @@ app.get("/get_all_products_detail", async (req, res) => {
   // console.log("showing req body  in get warehouse products", req.body);
 
   // console.log("showing email in warehouse products", email);
+
+  
+
   try {
     const warehouse_list = await warehouse_products_details.get_all_details();
-    console.log("showing warehouse listttt::", warehouse_list);
+    // console.log("showing product listttt::", warehouse_list);
+
+    // Send the warehouse list in the response
+    res.send(warehouse_list);
+  } catch (error) {
+    console.error("Error getting product details:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting product details", error: error.message });
+  }
+});
+
+
+app.post("/get_company_products", async (req, res) => {
+  const { email } = req.body;
+  // console.log("showing req body  in get warehouse products", req.body);
+
+  console.log("showing email in company products", email);
+  let company ="";
+  try{
+    existingUser = await userModel.getUserByEmail(email);
+    console.log("showing existing user", existingUser[0][0].company);
+    company = existingUser[0][0].company;
+  }catch{
+    console.log("error fetching user in suppliers");
+  }
+
+  try {
+    const warehouse_list = await warehouse_products_details.get_details_Oncompany(company);
+    console.log("showing company products listttt::", warehouse_list[0]);
 
     // Send the warehouse list in the response
     res.send(warehouse_list);
@@ -179,7 +285,6 @@ app.get("/get_all_products_detail", async (req, res) => {
 });
 
 //----------------------------  Warehouse Products -------------------------------------------------------------------
-
 
 warehouse_products.create_warehouse_product();
 
@@ -273,15 +378,21 @@ app.post("/get_all_warehouse_products", async (req, res) => {
   }
 });
 
-
 app.post("/inventory_update", async (req, res) => {
   const { email, warehouse, sku, quantity } = req.body;
-  console.log(`showing req body in inventory_update ${email}, ${sku}, ${warehouse}, ${quantity} `);
+  console.log(
+    `showing req body in inventory_update ${email}, ${sku}, ${warehouse}, ${quantity} `
+  );
   // console.log("showing req body in transfer_quantity ", req.body);
 
   // console.log("showing email in warehouse products", email);
   try {
-    const response = await warehouse_products.change_inventory(email, warehouse, sku, quantity);
+    const response = await warehouse_products.change_inventory(
+      email,
+      warehouse,
+      sku,
+      quantity
+    );
     console.log("showing response ::", response);
 
     // Send the warehouse list in the response
@@ -294,33 +405,38 @@ app.post("/inventory_update", async (req, res) => {
   }
 });
 
-
 //----------------------------  WAREHOUSE COUNTER -------------------------------------------------------------------
 warehouse_counter.create_warehouse_counter();
 
-
 app.post("/update_counter", async (req, res) => {
-  const { email,warehouse, counter } = req.body;
-  console.log(`showing req body in update_counter ${email}, ${warehouse}, ${counter} `);
+  const { email, warehouse, counter } = req.body;
+  console.log(
+    `showing req body in update_counter ${email}, ${warehouse}, ${counter} `
+  );
   // console.log("showing req body in transfer_quantity ", req.body);
 
   // console.log("showing email in warehouse products", email);
   try {
-    const response = await warehouse_counter.update_warehouse_counter(email, warehouse, counter);
+    const response = await warehouse_counter.update_warehouse_counter(
+      email,
+      warehouse,
+      counter
+    );
     console.log("showing response ::", response);
 
     // Send the warehouse list in the response
     res.send("Successfully created");
   } catch (error) {
     console.error("Error updating warehouse counter:", error);
-    res
-      .status(500)
-      .json({ message: "Error updating warehouse counter", error: error.message });
+    res.status(500).json({
+      message: "Error updating warehouse counter",
+      error: error.message,
+    });
   }
 });
 
 app.post("/get_counter", async (req, res) => {
-  const { email,warehouse, counter } = req.body;
+  const { email, warehouse, counter } = req.body;
   console.log(`showing req body in get_counter ${email}, ${warehouse} `);
   // console.log("showing req body in transfer_quantity ", req.body);
 
@@ -342,13 +458,22 @@ app.post("/get_counter", async (req, res) => {
 //----------------------------  TRANSFER STOCK -------------------------------------------------------------------
 
 app.post("/transfer_quantity", async (req, res) => {
-  const { email, sku, from_warehouse, to_warehouse, quantity } = req.body.transfer[0];
-  console.log(`showing req body in transfer_quantity ${email}, ${sku}, ${from_warehouse}, ${to_warehouse}, ${quantity} `);
+  const { email, sku, from_warehouse, to_warehouse, quantity } =
+    req.body.transfer[0];
+  console.log(
+    `showing req body in transfer_quantity ${email}, ${sku}, ${from_warehouse}, ${to_warehouse}, ${quantity} `
+  );
   // console.log("showing req body in transfer_quantity ", req.body);
 
   // console.log("showing email in warehouse products", email);
   try {
-    const response = await transfer_quantity.transfer_quantity(email, from_warehouse, quantity,sku,to_warehouse);
+    const response = await transfer_quantity.transfer_quantity(
+      email,
+      from_warehouse,
+      quantity,
+      sku,
+      to_warehouse
+    );
     console.log("showing response ::", response);
 
     // Send the warehouse list in the response
@@ -362,7 +487,6 @@ app.post("/transfer_quantity", async (req, res) => {
 });
 
 //----------------------------  ORDERS -------------------------------------------------------------------
-
 
 app.get("/getdata", (req, res) => {
   const get_prod_modified = {
@@ -398,7 +522,6 @@ app.get("/get_all_orders", (req, res) => {
     // console.log(formattedData);
   });
 });
-
 
 app.get("/get_orders", (req, res) => {
   const get_orders = {
@@ -470,13 +593,18 @@ app.get("/getdata", (req, res) => {
 });
 
 app.post("/create_product", (req, res) => {
-  console.log(req.stringify);
+  // console.log(req.stringify);
   const productCreateData = req.body.product;
-  console.log(
-    "showing req.body create product shopify ::   ",
-    productCreateData
-  );
-  console.log("saasads", productCreateData.price," sadfssda ",productCreateData.sku )
+  // console.log(
+  //   "showing req.body create product shopify ::   ",
+  //   productCreateData
+  // );
+  // console.log(
+  //   "saasads",
+  //   productCreateData.price,
+  //   " sadfssda ",
+  //   productCreateData.sku
+  // );
   const createProdModified = {
     method: "POST",
     url: `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/${endpoint}.json
@@ -536,7 +664,7 @@ app.get("/update_product", (req, res) => {
   request(updateProd, function (error, response) {
     if (error) throw new Error(error);
     res.send(response.body);
-    console.log(response.body);
+    // console.log(response.body);
   });
 });
 
@@ -544,7 +672,7 @@ app.get("/delete_product", (req, res) => {
   request(deleteProd, function (error, response) {
     if (error) throw new Error(error);
     res.send("successfully deleted");
-    console.log(response.body);
+    // console.log(response.body);
   });
 });
 
@@ -565,7 +693,7 @@ app.get("/get_customers", (req, res) => {
     const data = JSON.parse(response.body);
     const formattedData = JSON.stringify(data, null, 4);
     res.send(formattedData);
-    console.log(formattedData);
+    // console.log(formattedData);
   });
 });
 
@@ -586,7 +714,7 @@ app.get("/get_analytics/total_orders", (req, res) => {
     const data = JSON.parse(response.body);
     const formattedData = JSON.stringify(data, null, 4);
     res.send(formattedData);
-    console.log(formattedData);
+    // console.log(formattedData);
   });
 });
 
@@ -605,7 +733,7 @@ app.get("/get_analytics/total_orders_count", (req, res) => {
     const data = JSON.parse(response.body);
     const formattedData = JSON.stringify(data, null, 4);
     res.send(formattedData);
-    console.log(formattedData);
+    // console.log(formattedData);
   });
 });
 
@@ -626,7 +754,7 @@ app.get("/get_analytics/top_products", (req, res) => {
     const data = JSON.parse(response.body);
     const formattedData = JSON.stringify(data, null, 4);
     res.send(formattedData);
-    console.log(formattedData);
+    // console.log(formattedData);
   });
 });
 

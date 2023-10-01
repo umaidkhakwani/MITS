@@ -4,7 +4,8 @@ const connection = require("../Database/db");
 const create_warehouse_product_details = async () => {
   const sql = `
   CREATE TABLE IF NOT EXISTS product_list (
-        SKU VARCHAR(255) UNIQUE PRIMARY KEY,
+        SKU VARCHAR(255),
+        company VARCHAR(255),
         title VARCHAR(255) NOT NULL,
         description TEXT,
         picture_url VARCHAR(255),
@@ -13,7 +14,8 @@ const create_warehouse_product_details = async () => {
         weight DECIMAL(10, 2),
         size VARCHAR(255),
         color VARCHAR(255),
-        barcode VARCHAR(255)
+        barcode VARCHAR(255),
+        PRIMARY KEY (SKU, company)
       );
   `;
   const pool = await connection.getConnection();
@@ -27,6 +29,7 @@ const create_warehouse_product_details = async () => {
 const insert_warehouse_product_details = async (product) => {
   const {
     SKU,
+    company,
     title,
     description,
     picture_url,
@@ -38,11 +41,12 @@ const insert_warehouse_product_details = async (product) => {
     barcode,
   } = product;
   const sql =
-    "INSERT INTO product_list (SKU, title, description, picture_url, cost_price, retail_price,  weight, size, color, barcode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO product_list (SKU, company, title, description, picture_url, cost_price, retail_price,  weight, size, color, barcode) VALUES (?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   const pool = await connection.getConnection();
   try {
     await pool.query(sql, [
       SKU,
+      company,
       title,
       description,
       picture_url,
@@ -79,6 +83,16 @@ const get_all_details = async () => {
   }
 };
 
+const get_details_Oncompany = async (company) => {
+  const sql = "SELECT * FROM product_list WHERE company = ?";
+  const pool = await connection.getConnection();
+  try {
+    return await pool.query(sql, [company]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
 // const getUserByEmailandWarehouse = async (email, warehouse) => {
 //   const sql = "SELECT * FROM product_list WHERE email = ? AND warehouse = ?";
 //   const pool = await connection.getConnection();
@@ -92,7 +106,8 @@ const get_all_details = async () => {
 module.exports = {
   create_warehouse_product_details,
   insert_warehouse_product_details,
-//   getUserByEmailandWarehouse,
+  //   getUserByEmailandWarehouse,
   getUserByEmail,
   get_all_details,
+  get_details_Oncompany,
 };

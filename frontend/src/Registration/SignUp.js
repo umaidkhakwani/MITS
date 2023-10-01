@@ -52,6 +52,7 @@ export default function SignUp() {
     {
       fname: "",
       lname: "",
+      company: "",
       email: "",
       password: "",
     },
@@ -59,6 +60,7 @@ export default function SignUp() {
   const [errors, setErrors] = useState({
     fname: "",
     lname: "",
+    company: "",
     email: "",
     password: "",
   });
@@ -83,6 +85,9 @@ export default function SignUp() {
     if (!user_create.lname) {
       newErrors.lname = "last name is required";
     }
+    if (!user_create.company) {
+      newErrors.company = "company name is required";
+    }
     if (!user_create.password) {
       newErrors.password = "password is required";
     } else if (user_create.password.length < 8) {
@@ -105,6 +110,7 @@ export default function SignUp() {
     setUser_create({
       fname: data.get("fname"),
       lname: data.get("lname"),
+      company: data.get("company"),
       email: data.get("email"),
       password: data.get("password"),
     });
@@ -118,6 +124,7 @@ export default function SignUp() {
     console.log({
       fname: data.get("fname"),
       lname: data.get("lname"),
+      company: data.get("company"),
       email: data.get("email"),
       password: data.get("password"),
     });
@@ -275,6 +282,23 @@ export default function SignUp() {
                         value={user_create.lname}
                         onChange={(e) =>
                           handle_create_user("lname", e.target.value)
+                        }
+                      />
+                      <TextField
+                        className="custom-textfield"
+                        error={!!errors.company}
+                        helperText={errors.company}
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="company"
+                        label="Company Name"
+                        name="company"
+                        autoComplete="company"
+                        autoFocus
+                        value={user_create.company}
+                        onChange={(e) =>
+                          handle_create_user("company", e.target.value)
                         }
                       />
 

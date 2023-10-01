@@ -5,6 +5,7 @@ const createUserTable = async  () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
+      company VARCHAR(255) NOT NULL,
       fname VARCHAR(255) NOT NULL,
       lname VARCHAR(255) NOT NULL,
       email VARCHAR(255) NOT NULL UNIQUE,

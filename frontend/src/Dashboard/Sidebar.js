@@ -50,6 +50,11 @@ import Home from "./Home";
 import Warehouse_ftn from "../components/warehouse/Warehouse_component";
 import Warehouse_create from "../components/warehouse/Warehouse_create";
 import Header_ftn from "../containers/Header_ftn";
+import Customers_final from "../components/customers/Customers";
+import Suppliers from "../components/suppliers/Suppliers";
+import Suppliers_create from "../components/suppliers/Suppliers_create";
+import PosSale1 from "../components/POS/hamza/PosSale1";
+import POS1 from "../components/POS/POS1";
 
 const drawerWidth = 240;
 
@@ -476,19 +481,36 @@ export default function Sidebar() {
           </Drawer>
         </div>
 
-        <Box component="main" sx={{ width: "90%", height:"100%", backgroundColor:"#f2f2f2" }}>
-        <Header_ftn heading={selectedItem} />
-        {selectedItem === "Dashboard" ? (
-          <Home />
-        ) : selectedItem === "Warehouse" ? (
-          <Warehouse_create />
-        ) : selectedItem === "Inventory" ? (
-          ""
-        ) : selectedItem === "Customers" ? (
-          ""
-        ) : (
-          ""
-        )}
+        <Box
+          component="main"
+          sx={{ width: "90%", height: "100%", backgroundColor: "#f2f2f2" }}
+        >
+          <Header_ftn heading={selectedItem} />
+          {selectedItem === "Dashboard" ? (
+            <Home />
+          ) : selectedItem === "Warehouse" ? (
+            <Warehouse_create />
+          ) : selectedItem === "Inventory" ? (
+            ""
+          ) : selectedItem === "Customers" ? (
+            <Customers_final />
+          ) : selectedItem === "View" ? (
+            <Suppliers />
+          ) : selectedItem === "Add" ? (
+            <Suppliers_create />
+          ) : selectedItem === "POS" ? (
+            <POS1 />
+          ) : selectedItem === "Analytics" ? (
+            ""
+          ) : selectedItem === "Assign" ? (
+            ""
+          ) : selectedItem === "Smart Tools" ? (
+            ""
+          ) : selectedItem === "Setting" ? (
+            ""
+          ) : (
+            ""
+          )}
         </Box>
       </Box>
     </div>
