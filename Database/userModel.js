@@ -1,7 +1,7 @@
-const connection = require('./db');
+const connection = require("./db");
 
 // Create User Table
-const createUserTable = async  () => {
+const createUserTable = async () => {
   const sql = `
     CREATE TABLE IF NOT EXISTS users (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -34,14 +34,14 @@ const createUserTable = async  () => {
 //   return connection.promise().query(sql, [email]);
 // };
 
-
 // Insert a New User
 const insertUser = async (user) => {
-  const { fname, lname, email, password, userToken } = user;
-  const sql = 'INSERT INTO users (fname, lname, email, password, userToken) VALUES (?, ?, ?, ?, ?)';
+  const { fname, lname, email, password, company, userToken } = user;
+  const sql =
+    "INSERT INTO users (fname, lname, email, password, company, userToken) VALUES (?, ?, ?, ?, ?, ?)";
   const pool = await connection.getConnection();
   try {
-    await pool.query(sql, [fname, lname, email, password, userToken]);
+    await pool.query(sql, [fname, lname, email, password, company, userToken]);
   } finally {
     pool.release(); // Release the connection back to the pool
   }
@@ -49,10 +49,44 @@ const insertUser = async (user) => {
 
 // Fetch User by Email
 const getUserByEmail = async (email) => {
-  const sql = 'SELECT * FROM users WHERE email = ?';
+  const sql = "SELECT * FROM users WHERE email = ?";
   const pool = await connection.getConnection();
   try {
     return await pool.query(sql, [email]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
+const getUserByCompany = async (company) => {
+  const sql = "SELECT * FROM users WHERE company = ?";
+  const pool = await connection.getConnection();
+  try {
+    return await pool.query(sql, [company]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
+const updateUser = async (user) => {
+  const {  fname, lname, email, password, company, userToken } = user;
+  const sql =
+    "UPDATE users SET fname = ?, lname = ?, password = ?, userToken = ? WHERE email = ?";
+  const pool = await connection.getConnection();
+  try {
+    await pool.query(sql, [fname, lname, password, userToken, email]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
+const updateAdminUser = async (user) => {
+  const {  fname, lname, email, password } = user;
+  const sql =
+    "UPDATE users SET fname = ?, lname = ?, password = ? WHERE email = ?";
+  const pool = await connection.getConnection();
+  try {
+    await pool.query(sql, [fname, lname, password, email]);
   } finally {
     pool.release(); // Release the connection back to the pool
   }
@@ -62,5 +96,8 @@ const getUserByEmail = async (email) => {
 module.exports = {
   createUserTable,
   insertUser,
-  getUserByEmail
+  getUserByEmail,
+  getUserByCompany,
+  updateUser,
+  updateAdminUser,
 };

@@ -21,6 +21,8 @@ import CSVFileUploader from "./Import_csv";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 
+import { useSelector } from "react-redux";
+
 const auth = getAuth(firebase_app);
 
 var API_LINK = "http://localhost:5000/";
@@ -70,6 +72,10 @@ function List_ftn_pos(props) {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [inputValue, setInputValue] = useState("");
+
+  const company2 = useSelector((state) => state.users);
+  // console.log("showing company2 in list_ftn_pos", company2);
+
   // const [editedEmail, setEditedEmail] = useState(""); // State to store edited email
   // const [editedPassword, setEditedPassword] = useState(""); // State to store edited password
 
@@ -126,6 +132,44 @@ function List_ftn_pos(props) {
     setTotalCostPrice(newTotalCostPrice);
   };
 
+  const handle_invoice = () => {
+    // itemSave
+    // TotalCostPrice
+
+    const resultArray = [];
+
+    // Create a map to store unique objects and their counts
+    const uniqueObjectsMap = new Map();
+
+    for (const obj of itemSave) {
+      const key = JSON.stringify(obj);
+
+      if (uniqueObjectsMap.has(key)) {
+        // Increment the count and update the price for existing objects
+        const existingObject = uniqueObjectsMap.get(key);
+        existingObject.count++;
+        existingObject.cost_price += parseFloat(obj.cost_price); // Convert price to float and add it
+      } else {
+        // Add a new unique object to the map
+        const newObj = {
+          ...obj,
+          count: 1,
+          cost_price: parseFloat(obj.cost_price),
+        }; // Convert price to float
+        uniqueObjectsMap.set(key, newObj);
+      }
+    }
+
+    // Convert the map values back to an array of objects
+    resultArray.push(...uniqueObjectsMap.values());
+
+    // Calculate the total count
+    const totalCount = resultArray.reduce((total, obj) => total + obj.count, 0);
+
+    console.log(resultArray);
+    console.log("Total Count:", totalCount);
+  };
+
   const handleRowClick = async (item) => {
     // fetchProductDetails();
     console.log("sahfba", item); // Log the values in the row
@@ -141,6 +185,9 @@ function List_ftn_pos(props) {
 
     // Create a copy of the itemSave array and add the new item
     const newItemSave = [...itemSave, selectedItem];
+
+    console.log("newItemSave", newItemSave);
+    console.log("newTotalCostPrice", newTotalCostPrice);
 
     // Update the state with the new array
     setitemSave(newItemSave);
@@ -554,7 +601,7 @@ function List_ftn_pos(props) {
             >
               Total Amount: {totalCostPrice + totalCostPrice * 0.16}
             </Typography>
-            
+
             <TextField
               label="Total Cost Price"
               variant="outlined"
@@ -674,7 +721,7 @@ function List_ftn_pos(props) {
                     width: "100%",
                     borderRadius: "12px",
                   }}
-                  // onClick={handleSubmit}
+                  onClick={handle_invoice}
                 >
                   Print Invoice
                 </Button>

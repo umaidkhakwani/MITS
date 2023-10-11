@@ -138,8 +138,18 @@ export default function SignUp() {
         user_create.password
       );
       console.log("User created successfully!");
+
+      const requestData = {
+        fname: user_create.fname,
+        lname: user_create.lname,
+        email: user_create.email,
+        password: user_create.password,
+        company: user_create.company,
+        userToken: "786",
+      };
+
       axios
-        .post(API_LINK + "register", user_create)
+        .post(API_LINK + "register", requestData)
         .then((response) => {
           // setProducts(response.data.products);
           console.log("send data to backend :: ", response.data);

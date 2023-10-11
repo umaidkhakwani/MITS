@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -36,16 +36,65 @@ import Header_ftn from "../containers/Header_ftn";
 import logo from "../images/company_logo.png";
 import Dashboard_Cards from "../containers/cards";
 import Analytics from "../components/Analytics";
+import axios from "axios";
+
+import { useDispatch } from "react-redux";
+import { saveCompany } from "../redux2/save_companySlice";
+
+import firebase_app from "../Firebase/firebase";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+const auth = getAuth(firebase_app);
+
+var API_LINK = "http://localhost:5000/";
+var email = "";
 
 function Home() {
+  const dispatch = useDispatch();
+
+  const fetch_company = async () => {
+    // Get the current user
+    const user = auth.currentUser;
+    let company = "";
+    let user_id = "";
+    if (user) {
+      email = user.email;
+      const requestData = {
+        email: email,
+      };
+
+      await axios
+        .post(API_LINK + "get_user", requestData)
+        .then((response) => {
+          console.log("getting user data :: ", response.data[0].company);
+          console.log(typeof response.data);
+          const user_details ={
+            company : response.data[0].company,
+            id : response.data[0].id,
+            email: email,
+            password: response.data[0].password,
+          }
+          
+          console.log("showinf", user_details);
+          if(user_details.company){
+            dispatch(saveCompany(user_details));
+          }
+        })
+        .catch((err) => console.error(err));
+    }
+  };
+
+  useEffect(() => {
+    fetch_company();
+  }, []);
+
   return (
-    
     // <Box component="main">
     <div>
       <Dashboard_Cards />
       <Analytics />
     </div>
-    
+
     //<Header_ftn heading="Overview" />
 
     // </Box>

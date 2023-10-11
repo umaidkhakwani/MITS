@@ -77,6 +77,7 @@ function List_ftn_all(props) {
                 type="text"
                 style={{
                   width: "400px",
+                  margin:"20px 0px",
                   padding: "5px",
                   color: "black",
                   border: "1px solid #593993",

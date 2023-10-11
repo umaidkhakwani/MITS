@@ -1,14 +1,25 @@
+// import { createStore } from "redux";
 
-import { configureStore } from '@reduxjs/toolkit';
-import ordersReducer from './reducers/orderSlice';
+// export const store = createStore(reducers, applyMiddleware(thunk));
 
-const store = configureStore({
-  reducer: {
-    orders: ordersReducer,
-  },
-});
 
-export default store;
+
+
+// import { configureStore } from '@reduxjs/toolkit';
+// import ordersReducer from './reducers/orderSlice';
+
+// const store = configureStore({
+//   reducer: {
+//     orders: ordersReducer,
+//   },
+// });
+
+// export default store;
+
+
+
+
+//_--------------------------------------------------------------------
 
 
 // import { configureStore } from '@reduxjs/toolkit'

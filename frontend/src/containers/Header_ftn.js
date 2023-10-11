@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -35,6 +35,12 @@ import { red, green } from "@mui/material/colors";
 import logo from "../images/company_logo.png";
 import Dashboard_Cards from "./cards";
 import Analytics from "../components/Analytics";
+import { Link, useNavigate } from "react-router-dom";
+
+import firebase_app from "../Firebase/firebase";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+
+const auth = getAuth(firebase_app);
 
 // const drawerWidth = 240;
 
@@ -109,7 +115,7 @@ const containerStyle = {
   alignItems: "center",
   padding: "16px",
   height: "30px",
-  width:"97%",
+  width: "97%",
 };
 
 const badgesContainerStyle = {
@@ -124,6 +130,8 @@ const logoStyle = {
 };
 
 function Header_ftn(props) {
+  const navigate = useNavigate();
+
   // const theme = useTheme();
   // const [open, setOpen] = useState(false);
 
@@ -154,14 +162,26 @@ function Header_ftn(props) {
   };
 
   // Function to handle logout
-  const handleLogout = () => {
+  const handleLogout =  () => {
+    auth
+      .signOut()
+      .then(() => {
+        console.log("User logged out");
+        navigate("/");
+      })
+      .catch((error) => {
+        // An error occurred during logout
+        console.error("Logout error", error);
+      });
     // Perform logout logic here
     // For example, redirect to the logout page
   };
 
-  return( 
-  <div>
-<Box sx={containerStyle}>
+
+
+  return (
+    <div>
+      <Box sx={containerStyle}>
         <Typography
           variant="h6"
           sx={{
@@ -203,8 +223,8 @@ function Header_ftn(props) {
           margin: " 0 60px",
         }}
       />
-            {/* Notification Badge */}
-            <Menu
+      {/* Notification Badge */}
+      <Menu
         anchorEl={notificationAnchorEl}
         open={Boolean(notificationAnchorEl)}
         onClose={handleNotificationClose}
@@ -326,7 +346,7 @@ function Header_ftn(props) {
             }}
           />
           <Typography variant="body2" sx={{ color: "#FFFFFF" }}>
-            Company Name
+            {props.title ? props.title : "User Name" }
           </Typography>
         </div>
 
@@ -338,8 +358,7 @@ function Header_ftn(props) {
           Logout
         </MenuItem>
       </Menu>
-      
-  </div>
+    </div>
   );
 }
 

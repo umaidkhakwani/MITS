@@ -45,7 +45,7 @@ userModel.createUserTable();
 
 // Registration route
 app.post("/register", async (req, res) => {
-  const { fname, lname, email, password } = req.body;
+  const { fname, lname, email, password, company, userToken } = req.body;
 
   // Check if user already exists
   const existingUser = await userModel.getUserByEmail(email);
@@ -55,12 +55,33 @@ app.post("/register", async (req, res) => {
       .json({ message: "User with this email already exists" });
   }
 
-  let userToken = 0;
+  // let userToken = 0;
   // Insert new user
-  const newUser = { fname, lname, email, password, userToken };
+  const newUser = { fname, lname, email, password, company, userToken };
   await userModel.insertUser(newUser);
 
   res.status(201).json({ message: "User registered successfully" });
+});
+
+app.post("/getUsers_by_Company", async (req, res) => {
+  const { company } = req.body;
+
+  console.log("showing request in get user", req.body);
+
+  console.log("showing company in get user", company);
+  console.log("showing req body in get user", req.body);
+
+  // Check if user already exists
+  const existingUser = await userModel.getUserByCompany(company);
+  console.log("showing existing user ssss", existingUser);
+  if (existingUser[0].length > 0) {
+    // return res
+    //   .status(409)
+    //   .json({ message: "User with this email already exists" });
+    console.log("showing existing user", existingUser[0]);
+    res.send(existingUser[0]);
+  }
+  console.log("error fetching user");
 });
 
 // get user route
@@ -69,7 +90,6 @@ app.post("/get_user", async (req, res) => {
 
   console.log("showing email in get user", email);
   // console.log("showing req body in get user", req.body);
-
 
   // Check if user already exists
   const existingUser = await userModel.getUserByEmail(email);
@@ -83,6 +103,35 @@ app.post("/get_user", async (req, res) => {
   console.log("error fetching user");
 });
 
+app.post("/updateUser", async (req, res) => {
+  const { fname, lname, email, password, company, userToken } = req.body;
+
+  // Check if user already exists
+  const existingUser = await userModel.getUserByEmail(email);
+  if (existingUser[0].length > 0) {
+    const newUser = { fname, lname, email, password, company, userToken };
+    await userModel.updateUser(newUser);
+
+    res.status(201).json({ message: "User updated successfully" });
+  } else {
+    return res.status(409).json({ message: "User not found" });
+  }
+});
+
+app.post("/updateAdminUser", async (req, res) => {
+  const { fname, lname, email, password } = req.body;
+
+  // Check if user already exists
+  const existingUser = await userModel.getUserByEmail(email);
+  if (existingUser[0].length > 0) {
+    const newUser = { fname, lname, email, password };
+    await userModel.updateAdminUser(newUser);
+
+    res.status(201).json({ message: "User updated successfully" });
+  } else {
+    return res.status(409).json({ message: "User not found" });
+  }
+});
 
 //----------------------------  Supplier -------------------------------------------------------------------
 
@@ -105,13 +154,13 @@ app.post("/create_supplier", async (req, res) => {
       `inside create supplier:: email is : ${email}, phone_number is : ${phone_number}`
     );
     // console.log("showing supplier request body ", req.body.supplier);
-    let existingUser ="";
-    let company ="";
-    try{
+    let existingUser = "";
+    let company = "";
+    try {
       existingUser = await userModel.getUserByEmail(email);
       console.log("showing existing user", existingUser[0][0].company);
       company = existingUser[0][0].company;
-    }catch{
+    } catch {
       console.log("error fetching user in suppliers");
     }
 
@@ -145,32 +194,87 @@ warehouse_products_details.create_warehouse_product_details();
 
 // Registration route
 app.post("/create_warehouse", async (req, res) => {
-  const { email, title, address, city, country, association, date, time } =
-    req.body.product;
+  const {
+    email,
+    title,
+    address,
+    city,
+    country,
+    association,
+    company,
+    date,
+    time,
+  } = req.body.product;
   console.log(
     `inside create warehouse:: email is : ${email}, date is : ${date}, time is : ${time}, association is : ${association}`
   );
+  let role = "0";
+
+  // Check if user already exists
+  const existingWarehouse = await warehouse_model.getUserByEmailandStore(
+    email,
+    association
+  );
+  console.log("showing existing warehouse", existingWarehouse[0]);
+  if (existingWarehouse[0].length > 0) {
+    try {
+      const new_warehouse = {
+        email,
+        title,
+        address,
+        city,
+        country,
+        association,
+        role,
+        company,
+        date,
+        time,
+      };
+      await warehouse_model.insert_warehouse(new_warehouse);
+
+      res.status(201).json({ message: "Warehouse created successfully" });
+    } catch (error) {
+      console.error("Error creating warehouse:", error);
+      res.status(500).json({ message: "Error creating warehouse" });
+    }
+  } else {
+    role = "1";
+    try {
+      const new_warehouse = {
+        email,
+        title,
+        address,
+        city,
+        country,
+        association,
+        role,
+        company,
+        date,
+        time,
+      };
+      await warehouse_model.insert_warehouse(new_warehouse);
+
+      res.status(201).json({ message: "Warehouse created successfully" });
+    } catch (error) {
+      console.error("Error creating warehouse:", error);
+      res.status(500).json({ message: "Error creating warehouse" });
+    }
+  }
 
   // console.log("showing request body ", req.body);
   let userToken = 0;
   // Insert new user
-  try {
-    const new_warehouse = {
-      email,
-      title,
-      address,
-      city,
-      country,
-      association,
-      date,
-      time,
-    };
-    await warehouse_model.insert_warehouse(new_warehouse);
+});
 
-    res.status(201).json({ message: "Warehouse created successfully" });
-  } catch (error) {
-    console.error("Error creating warehouse:", error);
-    res.status(500).json({ message: "Error creating warehouse" });
+app.post("/get_primary_warehouse", async (req, res) => {
+  const { email } = req.body;
+
+  // Check if user already exists
+  const existingUser = await warehouse_model.get_Primary_Warehouse(email);
+  if (existingUser[0].length > 0) {
+    res.send(existingUser[0]);
+  } else {
+    return res.status(409).json({ message: "User warehouse not found" });
   }
 });
 
@@ -179,6 +283,23 @@ app.post("/get_warehouse", async (req, res) => {
   // console.log("showing email in get warehouse", email);
   try {
     const warehouse_list = await warehouse_model.getUserByEmail(email);
+    // console.log(warehouse_list[0]);
+
+    // Send the warehouse list in the response
+    res.send(warehouse_list[0]);
+  } catch (error) {
+    console.error("Error getting warehouse list:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting warehouse list", error: error.message });
+  }
+});
+
+app.post("/get_warehouse_By_company", async (req, res) => {
+  const { company } = req.body;
+  console.log("showing company in get warehouse", company);
+  try {
+    const warehouse_list = await warehouse_model.getUserByCompany(company);
     // console.log(warehouse_list[0]);
 
     // Send the warehouse list in the response
@@ -239,8 +360,6 @@ app.get("/get_all_products_detail", async (req, res) => {
 
   // console.log("showing email in warehouse products", email);
 
-  
-
   try {
     const warehouse_list = await warehouse_products_details.get_all_details();
     // console.log("showing product listttt::", warehouse_list);
@@ -255,23 +374,23 @@ app.get("/get_all_products_detail", async (req, res) => {
   }
 });
 
-
 app.post("/get_company_products", async (req, res) => {
   const { email } = req.body;
   // console.log("showing req body  in get warehouse products", req.body);
 
   console.log("showing email in company products", email);
-  let company ="";
-  try{
+  let company = "";
+  try {
     existingUser = await userModel.getUserByEmail(email);
     console.log("showing existing user", existingUser[0][0].company);
     company = existingUser[0][0].company;
-  }catch{
+  } catch {
     console.log("error fetching user in suppliers");
   }
 
   try {
-    const warehouse_list = await warehouse_products_details.get_details_Oncompany(company);
+    const warehouse_list =
+      await warehouse_products_details.get_details_Oncompany(company);
     console.log("showing company products listttt::", warehouse_list[0]);
 
     // Send the warehouse list in the response
@@ -288,11 +407,29 @@ app.post("/get_company_products", async (req, res) => {
 
 warehouse_products.create_warehouse_product();
 
+app.post("/get_warehouse_byCompany", async (req, res) => {
+  const { company } = req.body;
+  console.log("showing company in get_warehouse_byCompany", company);
+  try {
+    const warehouse_list = await warehouse_products.getUserByCompany(company);
+    console.log("showing warehouse listttt::", warehouse_list);
+
+    // Send the warehouse list in the response
+    res.send(warehouse_list);
+  } catch (error) {
+    console.error("Error getting warehouse list:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting warehouse list", error: error.message });
+  }
+});
+
 // Registration route
 app.post("/create_warehouse_products", async (req, res) => {
   const {
     email,
     warehouse,
+    company,
     title,
     description,
     picture_url,
@@ -313,6 +450,7 @@ app.post("/create_warehouse_products", async (req, res) => {
   const new_warehouse_products = {
     email,
     warehouse,
+    company,
     title,
     description,
     picture_url,

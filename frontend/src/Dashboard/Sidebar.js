@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { styled, useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
 import MuiDrawer from "@mui/material/Drawer";
@@ -51,10 +51,34 @@ import Warehouse_ftn from "../components/warehouse/Warehouse_component";
 import Warehouse_create from "../components/warehouse/Warehouse_create";
 import Header_ftn from "../containers/Header_ftn";
 import Customers_final from "../components/customers/Customers";
+import Customers from "../components/customers/Customers";
 import Suppliers from "../components/suppliers/Suppliers";
 import Suppliers_create from "../components/suppliers/Suppliers_create";
 import PosSale1 from "../components/POS/hamza/PosSale1";
 import POS1 from "../components/POS/POS1";
+import Transfer_Stock from "../components/warehouse/Transfer_Stock";
+import Inventory_products from "../components/inventory/Inventory_products";
+import Transfer_products from "../components/inventory/Transfer_products";
+import Inventory_ftn from "../components/warehouse/Inventory";
+import Choose_warehouse from "../components/inventory/Choose_warehouse";
+import Roles from "../components/roles/Roles";
+import User_update from "../components/setting/User_update";
+import Analytics from "../components/Analytics";
+import { Link, useNavigate } from "react-router-dom";
+import Login from "../Registration/Login";
+
+import firebase_app from "../Firebase/firebase";
+import {
+  getAuth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import axios from "axios";
+
+const auth = getAuth(firebase_app);
+
+// import Inventory_transfer from "../components/inventory/Transfer";
 
 const drawerWidth = 240;
 
@@ -136,37 +160,111 @@ const Logo = styled("img")({
 });
 
 export default function Sidebar() {
+  const navigate = useNavigate();
+
   const theme = useTheme();
   const [open, setOpen] = useState(true);
   const [selectedItem, setSelectedItem] = useState("Dashboard");
   const [openSublist, setOpenSublist] = useState(null);
+  const [user_title, setuser_title] = useState("");
+
+  const user = auth.currentUser;
+  var API_LINK = "http://localhost:5000/";
+  var title2 = "";
 
   const handleDrawerToggle = () => {
     setOpen(!open);
   };
+
+  useEffect(() => {
+    let email = "";
+    if (user) {
+      email = user.email;
+      axios
+        .post(API_LINK + "get_user", { email: email })
+        .then((response) => {
+          // setProducts(response.data.products);
+          console.log("Showing user data in sidebar :: ", response.data);
+          // console.log(typeof response.data);
+          if (response.data) {
+            // set_warehouse_data(response.data);
+            setuser_title(response.data[0].fname + " " + response.data[0].lname);
+            title2 = response.data[0].fname + " " + response.data[0].lname;
+            console.log(title2);
+          }
+        })
+        .catch((err) => console.error(err));
+    }
+  }, [selectedItem]);
 
   const handlelogoClick = () => {
     setSelectedItem("Dashboard");
     setOpenSublist(null);
   };
 
-  const handleItemClick = (itemText) => {
-    if (openSublist === itemText) {
+  const handleItemClick = (item) => {
+    if (item.sublist) {
+      setSelectedItem(item.sublist[0].text); // Select the first subitem
+    } else {
+      setSelectedItem(item.text); // Select the parent if it has no subitems
+    }
+    if (openSublist === item.text) {
       setOpenSublist(null);
     } else {
-      setOpenSublist(itemText);
+      setOpenSublist(item.text);
     }
-
-    setSelectedItem(itemText);
-    console.log(`Clicked: ${itemText}`);
   };
 
   const handleSubItemClick = (subItemText) => {
     setSelectedItem(subItemText);
-    console.log(`Clicked: ${subItemText}`);
-
-    // Prevent sublists from collapsing when clicking on them
   };
+
+
+
+  // const handleItemClick = (itemText) => {
+  //   if (openSublist === itemText) {
+  //     setOpenSublist(null);
+  //   } else {
+  //     setOpenSublist(itemText);
+  //   }
+
+  //   setSelectedItem(itemText);
+  //   console.log(`Clicked: ${itemText}`);
+  // };
+
+  // const handleSubItemClick = (subItemText) => {
+  //   setSelectedItem(subItemText);
+  //   console.log(`Clicked: ${subItemText}`);
+
+  //   // Prevent sublists from collapsing when clicking on them
+  // };
+
+  const menuItems = [
+    { text: "Dashboard", icon: dashboard_icon },
+    { text: "Warehouse", icon: warehouse_icon },
+    {
+      text: "Inventory",
+      icon: inventory_icon,
+      sublist: [
+        { text: "Products", icon: dashboard_icon },
+        { text: "Transfers", icon: dashboard_icon },
+      ],
+    },
+    { text: "Customers", icon: customers_icon },
+    {
+      text: "Suppliers",
+      icon: supplier_icon,
+      sublist: [
+        { text: "View", icon: dashboard_icon },
+        { text: "Add", icon: dashboard_icon },
+      ],
+    },
+    { text: "POS", icon: pos_icon },
+    { text: "Analytics", icon: analytics_icon },
+    { text: "Assign", icon: assign_icon },
+    { text: "Smart Tools", icon: setting },
+    { text: "Setting", icon: setting },
+  ];
 
   return (
     <div>
@@ -281,174 +379,156 @@ export default function Sidebar() {
                 <Divider />
 
                 {/* Lists */}
-                <List>
-                  {[
-                    { text: "Dashboard", icon: dashboard_icon },
-                    { text: "Warehouse", icon: warehouse_icon },
-                    {
-                      text: "Inventory",
-                      icon: inventory_icon,
-                      sublist: [
-                        { text: "Products", icon: dashboard_icon },
-                        { text: "Transfers", icon: dashboard_icon },
-                      ],
-                    },
-                    { text: "Customers", icon: customers_icon },
-                    {
-                      text: "Suppliers",
-                      icon: supplier_icon,
-                      sublist: [
-                        { text: "View", icon: dashboard_icon },
-                        { text: "Add", icon: dashboard_icon },
-                      ],
-                    },
-                    { text: "POS", icon: pos_icon },
-                    { text: "Analytics", icon: analytics_icon },
-                    { text: "Assign", icon: assign_icon },
-                    { text: "Smart Tools", icon: setting },
-                    { text: "Setting", icon: setting },
-                  ].map((item, index) => (
-                    <div key={item.text}>
-                      <ListItem
-                        disablePadding
-                        sx={{
-                          display: "block",
-                          backgroundColor:
-                            selectedItem === item.text
-                              ? "rgba(225, 246, 246, 0.10)"
-                              : "transparent",
-                          borderLeft:
-                            selectedItem === item.text
-                              ? "5px solid #593993"
-                              : "none",
-                        }}
-                      >
-                        <ListItemButton
+                <div>
+                  {/* Your logo or header here */}
+                  <List>
+                    {menuItems.map((item, index) => (
+                      <div key={item.text}>
+                        <ListItem
+                          disablePadding
                           sx={{
-                            height: "30px",
-                            justifyContent: open ? "initial" : "center",
-                            px: 2.5,
-                            color:
+                            display: "block",
+                            backgroundColor:
                               selectedItem === item.text
-                                ? "#593993"
-                                : "#cec7c7",
-                            fontFamily: "Khula",
-                            fontSize: "28px",
-                            fontStyle: "normal",
-                            fontWeight:
-                              selectedItem === item.text ? "bold" : 400,
-                            lineHeight: "normal",
-                            margin: "10px 0",
+                                ? "rgba(225, 246, 246, 0.10)"
+                                : "transparent",
+                            borderLeft:
+                              selectedItem === item.text
+                                ? "5px solid #593993"
+                                : "none",
                           }}
-                          onClick={() => handleItemClick(item.text)}
                         >
-                          <ListItemIcon
+                          <ListItemButton
                             sx={{
-                              minWidth: 0,
-                              mr: open ? 3 : "auto",
-                              justifyContent: "center",
+                              height: "30px",
+                              justifyContent: open ? "initial" : "center",
+                              px: 2.5,
+                              color:
+                                selectedItem === item.text
+                                  ? "#593993"
+                                  : "#cec7c7",
+                              fontFamily: "Khula",
+                              fontSize: "28px",
+                              fontStyle: "normal",
+                              fontWeight:
+                                selectedItem === item.text ? "bold" : 400,
+                              lineHeight: "normal",
+                              margin: "10px 0",
                             }}
+                            onClick={() => handleItemClick(item)}
                           >
-                            <img
-                              src={item.icon}
-                              alt={item.text}
-                              style={{
-                                filter:
+                            <ListItemIcon
+                              sx={{
+                                minWidth: 0,
+                                mr: open ? 3 : "auto",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <img
+                                src={item.icon}
+                                alt={item.text}
+                                style={{
+                                  filter:
+                                    selectedItem === item.text
+                                      ? "brightness(0) invert(1) sepia(100%) saturate(10000%) hue-rotate(234deg) brightness(1.3)"
+                                      : "none",
+                                }}
+                              />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={item.text}
+                              sx={{
+                                opacity: open ? 1 : 0,
+                                fontWeight:
                                   selectedItem === item.text
-                                    ? "brightness(0) invert(1) sepia(100%) saturate(10000%) hue-rotate(234deg) brightness(1.3)"
-                                    : "none",
+                                    ? "bold"
+                                    : "normal",
                               }}
                             />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={item.text}
-                            sx={{
-                              opacity: open ? 1 : 0,
-                              fontWeight:
-                                selectedItem === item.text ? "bold" : "normal",
-                            }}
-                          />
-                          {item.sublist && (
-                            <IconButton
-                              sx={{ color: "#cec7c7", marginLeft: "auto" }}
-                            >
-                              {openSublist === item.text ? (
-                                <ExpandLessIcon />
-                              ) : (
-                                <ExpandMoreIcon />
-                              )}
-                            </IconButton>
-                          )}
-                        </ListItemButton>
-                      </ListItem>
-                      {item.sublist && openSublist === item.text && (
-                        <List sx={{ paddingLeft: "25px" }}>
-                          {item.sublist.map((subItem, subIndex) => (
-                            <ListItem
-                              key={subItem.text}
-                              disablePadding
-                              sx={{
-                                display: "block",
-                                backgroundColor:
-                                  selectedItem === subItem.text
-                                    ? "rgba(225, 246, 246, 0.10)"
-                                    : "transparent",
-                                borderLeft:
-                                  selectedItem === subItem.text
-                                    ? "5px solid #593993"
-                                    : "none",
-                              }}
-                            >
-                              <ListItemButton
-                                sx={{
-                                  height: "20px",
-                                  justifyContent: open ? "initial" : "center",
-                                  px: 2.5,
-                                  color:
-                                    selectedItem === subItem.text
-                                      ? "#593993"
-                                      : "#cec7c7",
-                                  fontFamily: "Khula",
-                                  fontSize: "28px",
-                                  fontStyle: "normal",
-                                  fontWeight:
-                                    selectedItem === subItem.text
-                                      ? "bold"
-                                      : 400,
-                                  lineHeight: "normal",
-                                  margin: "8px 0",
-                                }}
-                                onClick={() => handleSubItemClick(subItem.text)}
+                            {item.sublist && (
+                              <IconButton
+                                sx={{ color: "#cec7c7", marginLeft: "auto" }}
                               >
-                                <ListItemIcon
+                                {openSublist === item.text ? (
+                                  <ExpandLessIcon />
+                                ) : (
+                                  <ExpandMoreIcon />
+                                )}
+                              </IconButton>
+                            )}
+                          </ListItemButton>
+                        </ListItem>
+                        {item.sublist && openSublist === item.text && (
+                          <List sx={{ paddingLeft: "25px" }}>
+                            {item.sublist.map((subItem, subIndex) => (
+                              <ListItem
+                                key={subItem.text}
+                                disablePadding
+                                sx={{
+                                  display: "block",
+                                  backgroundColor:
+                                    selectedItem === subItem.text
+                                      ? "rgba(225, 246, 246, 0.10)"
+                                      : "transparent",
+                                  borderLeft:
+                                    selectedItem === subItem.text
+                                      ? "5px solid #593993"
+                                      : "none",
+                                }}
+                              >
+                                <ListItemButton
                                   sx={{
-                                    minWidth: 0,
-                                    mr: open ? 3 : "auto",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  {/* Your sub-item icon here */}
-                                </ListItemIcon>
-                                <ListItemText
-                                  primary={subItem.text}
-                                  sx={{
-                                    opacity: open ? 1 : 0,
+                                    height: "20px",
+                                    justifyContent: open ? "initial" : "center",
+                                    px: 2.5,
+                                    color:
+                                      selectedItem === subItem.text
+                                        ? "#593993"
+                                        : "#cec7c7",
+                                    fontFamily: "Khula",
+                                    fontSize: "28px",
+                                    fontStyle: "normal",
                                     fontWeight:
                                       selectedItem === subItem.text
                                         ? "bold"
-                                        : "normal",
+                                        : 400,
+                                    lineHeight: "normal",
+                                    margin: "8px 0",
                                   }}
-                                />
-                              </ListItemButton>
-                            </ListItem>
-                          ))}
-                        </List>
-                      )}
-                    </div>
-                  ))}
-                </List>
+                                  onClick={() =>
+                                    handleSubItemClick(subItem.text)
+                                  }
+                                >
+                                  <ListItemIcon
+                                    sx={{
+                                      minWidth: 0,
+                                      mr: open ? 3 : "auto",
+                                      justifyContent: "center",
+                                    }}
+                                  >
+                                    {/* Your sub-item icon here */}
+                                  </ListItemIcon>
+                                  <ListItemText
+                                    primary={subItem.text}
+                                    sx={{
+                                      opacity: open ? 1 : 0,
+                                      fontWeight:
+                                        selectedItem === subItem.text
+                                          ? "bold"
+                                          : "normal",
+                                    }}
+                                  />
+                                </ListItemButton>
+                              </ListItem>
+                            ))}
+                          </List>
+                        )}
+                      </div>
+                    ))}
+                  </List>
+                  <Divider />
+                </div>
 
-                <Divider />
                 {/* <List>
               {["All mail", "Trash", "Spam"].map((text, index) => (
                 <ListItem key={text} disablePadding sx={{ display: "block" }}>
@@ -485,29 +565,39 @@ export default function Sidebar() {
           component="main"
           sx={{ width: "90%", height: "100%", backgroundColor: "#f2f2f2" }}
         >
-          <Header_ftn heading={selectedItem} />
+          
+          {user_title ? (
+            <Header_ftn heading={selectedItem} title={user_title} />
+          ) : (
+            ""
+          )}
           {selectedItem === "Dashboard" ? (
             <Home />
           ) : selectedItem === "Warehouse" ? (
             <Warehouse_create />
-          ) : selectedItem === "Inventory" ? (
-            ""
+          ) : selectedItem === "Products" ? (
+            <Inventory_products />
+          ) : selectedItem === "Transfers" ? (
+            // <Inventory_transfer />
+            // <Transfer_products />
+            <Choose_warehouse />
           ) : selectedItem === "Customers" ? (
-            <Customers_final />
+            <Customers />
           ) : selectedItem === "View" ? (
             <Suppliers />
           ) : selectedItem === "Add" ? (
             <Suppliers_create />
           ) : selectedItem === "POS" ? (
-            <POS1 />
+            // <POS1 />
+            navigate("/pos")
           ) : selectedItem === "Analytics" ? (
-            ""
+            <Analytics />
           ) : selectedItem === "Assign" ? (
-            ""
+            <Roles />
           ) : selectedItem === "Smart Tools" ? (
             ""
           ) : selectedItem === "Setting" ? (
-            ""
+            <User_update />
           ) : (
             ""
           )}

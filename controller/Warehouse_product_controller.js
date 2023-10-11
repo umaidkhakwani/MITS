@@ -6,6 +6,7 @@ const create_warehouse_product = async () => {
   CREATE TABLE IF NOT EXISTS warehouse_product (
     id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) NOT NULL,
+    company VARCHAR(255) NOT NULL,
     warehouse VARCHAR(255) NOT NULL,
     SKU VARCHAR(255) NOT NULL,
     quantity INT,
@@ -23,12 +24,11 @@ const create_warehouse_product = async () => {
   }
 };
 
-
 const insert_warehouse_product = async (product) => {
-
   const {
     email,
     warehouse,
+    company,
     title,
     description,
     picture_url,
@@ -44,11 +44,11 @@ const insert_warehouse_product = async (product) => {
 
   // Insert into product_list table
   const productSql =
-    "INSERT INTO product_list (SKU, title, description, picture_url, cost_price, retail_price, weight, size, color, barcode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-  
+    "INSERT INTO product_list (SKU, company,title, description, picture_url, cost_price, retail_price, weight, size, color, barcode) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
   // Insert into warehouse_product table
   const warehouseProductSql =
-    "INSERT INTO warehouse_product (email, warehouse, SKU, quantity) VALUES (?, ?, ?, ?)";
+    "INSERT INTO warehouse_product (email, company, warehouse, SKU, quantity) VALUES (?, ?, ?, ?, ?)";
 
   const pool = await connection.getConnection();
   try {
@@ -57,6 +57,7 @@ const insert_warehouse_product = async (product) => {
     try {
       await pool.query(productSql, [
         SKU,
+        company,
         title,
         description,
         picture_url,
@@ -70,19 +71,16 @@ const insert_warehouse_product = async (product) => {
     } catch (error) {
       if (error.code === "ER_DUP_ENTRY") {
         // Handle unique constraint violation for SKU duplication
-        console.error("SKU already exists. Proceeding with warehouseProductSql.");
+        console.error(
+          "SKU already exists. Proceeding with warehouseProductSql."
+        );
       } else {
         // Handle other errors
         throw error;
       }
     }
-    
-    await pool.query(warehouseProductSql, [
-      email,
-      warehouse,
-      SKU,
-      quantity,
-    ]);
+
+    await pool.query(warehouseProductSql, [email, company, warehouse, SKU, quantity]);
 
     await pool.query("COMMIT"); // Commit the transaction
   } catch (error) {
@@ -92,8 +90,6 @@ const insert_warehouse_product = async (product) => {
     pool.release(); // Release the connection back to the pool
   }
 };
-
-
 
 // Fetch User by Email
 const getUserByEmail = async (email) => {
@@ -106,6 +102,16 @@ const getUserByEmail = async (email) => {
   }
 };
 
+// Fetch User by Company
+const getUserByCompany = async (company) => {
+  const sql = "SELECT * FROM warehouse_product WHERE company = ?";
+  const pool = await connection.getConnection();
+  try {
+    return await pool.query(sql, [company]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
 const getUserByEmailandWarehouse = async (email, warehouse) => {
   const sql =
     "SELECT * FROM warehouse_product WHERE email = ? AND warehouse = ?";
@@ -116,7 +122,6 @@ const getUserByEmailandWarehouse = async (email, warehouse) => {
     pool.release(); // Release the connection back to the pool
   }
 };
-
 
 const change_inventory = async (email, warehouse, sku, quantity) => {
   const sql = `
@@ -137,5 +142,6 @@ module.exports = {
   insert_warehouse_product,
   getUserByEmailandWarehouse,
   getUserByEmail,
+  getUserByCompany,
   change_inventory,
 };

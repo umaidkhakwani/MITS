@@ -11,6 +11,8 @@ const create_warehouse = async () => {
       address VARCHAR(255) NOT NULL,
       country VARCHAR(255) NOT NULL,
       association VARCHAR(255) NOT NULL,
+      role VARCHAR(2) NOT NULL,
+      company VARCHAR(255) NOT NULL,
       date DATE NOT NULL,
       time TIME NOT NULL,
       FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
@@ -26,14 +28,14 @@ const create_warehouse = async () => {
 
 // Insert a New User
 const insert_warehouse = async (warehouse) => {
-  const { email, title, city, address, country, association,date, time } = warehouse;
+  const { email, title, city, address, country, association, role, company, date, time } = warehouse;
   const sql =
-    "INSERT INTO warehouse (email, title, city, address, country,association, date, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO warehouse (email, title, city, address, country,association, role, company, date, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     const sql2 =
     "INSERT INTO warehouse_counter (email, warehouse) VALUES (?, ?)";
   const pool = await connection.getConnection();
   try {
-    await pool.query(sql, [email, title, address, city, country,association, date, time]);
+    await pool.query(sql, [email, title, address, city, country,association, role, company, date, time]);
     await pool.query(sql2, [email, title]);
   } finally {
     pool.release(); // Release the connection back to the pool
@@ -47,6 +49,17 @@ const getUserByEmail = async (email) => {
   const pool = await connection.getConnection();
   try {
     return await pool.query(sql, [email]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
+const getUserByCompany = async (company) => {
+  
+  const sql = "SELECT * FROM warehouse WHERE company = ?";
+  const pool = await connection.getConnection();
+  try {
+    return await pool.query(sql, [company]);
   } finally {
     pool.release(); // Release the connection back to the pool
   }
@@ -72,11 +85,23 @@ const getUserByEmailandWarehouse = async (email, title) => {
     }
   };
 
+  const get_Primary_Warehouse = async (email) => {
+    const sql = "SELECT * FROM warehouse WHERE email = ? AND role = '1'";
+    const pool = await connection.getConnection();
+    try {
+      return await pool.query(sql, [email]);
+    } finally {
+      pool.release(); // Release the connection back to the pool
+    }
+  };
+
 
 module.exports = {
   create_warehouse,
   insert_warehouse,
   getUserByEmailandStore,
   getUserByEmail,
+  getUserByCompany,
   getUserByEmailandWarehouse,
+  get_Primary_Warehouse,
 };

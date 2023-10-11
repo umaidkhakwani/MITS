@@ -20,6 +20,10 @@ import { Container } from "@mui/material";
 import "../css/styles.css";
 
 
+import {useDispatch} from "react-redux";
+import {saveCompany} from "../redux2/save_companySlice";
+
+
 import firebase_app from "../Firebase/firebase";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 const auth = getAuth(firebase_app);
@@ -28,6 +32,7 @@ const defaultTheme = createTheme();
 
 export default function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [user_create, setUser_create] = useState([
     {
@@ -97,7 +102,10 @@ export default function Login() {
         user_create.password
       );
       console.log("User logged in successfully!");
-      alert("User Logged In Successfully!!!");
+
+      // dispatch(saveCompany(user_create.email));
+      
+      // alert("User Logged In Successfully!!!");
       await navigate("/dashboard");
     } catch (error) {
       console.error(error.message);
