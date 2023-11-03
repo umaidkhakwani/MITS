@@ -21,22 +21,6 @@ function POS_Customers() {
   const company2 = useSelector((state) => state.users);
   console.log("showing company2", company2);
 
-  const handle_view_products = () => {
-    set_product_options("view_products");
-  };
-
-  const handle_create_products = () => {
-    set_product_options("create_products");
-  };
-
-  const handle_import_products = () => {
-    set_product_options("import_products");
-  };
-
-  const handle_export_products = () => {
-    set_product_options("export_products");
-  };
-
   const sorting_function = () => {
     if (responseData_customers) {
       const sorted = responseData_customers
@@ -67,23 +51,35 @@ function POS_Customers() {
     let email = "";
     if (user) {
       email = user.email;
+      const filteredCompanies = company2.filter(
+        (company) => company.email === email
+      );
+      console.log("filtered companies", filteredCompanies[0]);
 
       const requestData = {
-        email: email,
+        company: filteredCompanies[0].company,
       };
 
       try {
         const response = await axios.post(
-          API_LINK + "get_company_products",
+          API_LINK + "get_customers_by_company",
           requestData
         );
         console.log(
           "data sent from backend in inventory products:: ",
           response.data[0]
         );
-        console.log(typeof response.data);
-        setSortedCustomers(response.data[0]);
-        setResponseData_customers(response.data);
+
+        const matchingWarehouseData = response.data[0].map((customer) => {
+          return {
+            ...customer,
+            date: customer.date.split('T')[0],
+          } 
+        })
+        console.log("matchingWarehouseData", matchingWarehouseData);
+        
+        setSortedCustomers(matchingWarehouseData);
+        setResponseData_customers(matchingWarehouseData);
       } catch (error) {
         console.error("Error fetching data:", error);
         // Handle the error

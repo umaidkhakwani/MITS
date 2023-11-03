@@ -8,6 +8,7 @@ import firebase_app from "../Firebase/firebase";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import Update_warehouse_info from "../components/warehouse/Update_warehouse_info";
 import CSVFileUploader from "./Import_csv";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 
 const auth = getAuth(firebase_app);
 
@@ -28,6 +29,12 @@ function List_ftn(props) {
   const [showUploader, setShowUploader] = useState(false);
   // const [editedEmail, setEditedEmail] = useState(""); // State to store edited email
   // const [editedPassword, setEditedPassword] = useState(""); // State to store edited password
+
+  // const history = useHistory();
+
+  // const goBack = () => {
+  //   history.goBack(); // Go back to the previous page
+  // };
 
   const fetchProductDetails = async () => {
     console.log("into fetchProductDetails");
@@ -57,6 +64,12 @@ function List_ftn(props) {
     }
     console.log("showing seletcted rows ", selectedRows.length);
   };
+
+  const handleback = () => {
+    setchangeList("");
+    setSelectedRows("");
+    setFilteredData("");
+  }
 
   const handleRowClick = async (item) => {
     // fetchProductDetails();
@@ -217,7 +230,21 @@ function List_ftn(props) {
       {changeList ? (
         <div>
           <h2>New Data</h2>
-          <div>
+          <button
+          onClick={handleback}
+            style={{
+              backgroundColor: "#ce93d8",
+              color: "red",
+              cursor: "pointer",
+              border: "none",
+              padding: "2px 8px",
+              borderRadius: "10px",
+              opacity: 0.9,
+            }}
+          >
+            <KeyboardBackspaceIcon style={{ color: "black" }} />
+          </button>
+          {/* <div>
             <Button
               variant="outlined"
               sx={{
@@ -231,7 +258,6 @@ function List_ftn(props) {
               Import
             </Button>
             {showUploader && <CSVFileUploader />}{" "}
-            {/* Conditionally render CSVFileUploader */}
             <Button
               variant="outlined"
               sx={{
@@ -244,7 +270,7 @@ function List_ftn(props) {
             >
               Export
             </Button>
-          </div>
+          </div> */}
 
           <table
             style={{

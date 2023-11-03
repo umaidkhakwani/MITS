@@ -27,6 +27,14 @@ function Choose_POS() {
   const [warehouse_index, set_warehouse_index] = useState("");
   const [warehouse_data, set_warehouse_data] = useState("");
   const [user_data, set_user_data] = useState("");
+
+//-----------------------------------------------------------------------------------------------
+
+const [pos1Component, setPos1Component] = useState(null);
+
+//-----------------------------------------------------------------------------------------------
+
+
   //   const [selectedItemIndex, setSelectedItemIndex] = useState(null); // State to store the selected index
   const company2 = useSelector((state) => state.users);
   console.log("showing company2 in choose POS", company2);
@@ -120,6 +128,7 @@ function Choose_POS() {
     fetch_user_data();
   }, []);
 
+
   const handleChange = (event) => {
     set_warehouse_index(event.target.value); // Update selected inventory
     if (event.target.value)
@@ -128,6 +137,23 @@ function Choose_POS() {
         warehouse_data[event.target.value]
       );
   };
+
+
+//   useEffect(() => {
+//     // Define a variable to store the selected warehouse title.
+//     let selectedWarehouseTitle = '';
+
+//     if (warehouse_index !== '' && warehouse_data[warehouse_index]) {
+//       selectedWarehouseTitle = warehouse_data[warehouse_index].title;
+//     }
+
+//     // Render the POS1 component with the selected warehouse title.
+//     const pos1Component = selectedWarehouseTitle ? <POS1 warehouse_name={selectedWarehouseTitle} /> : null;
+
+//     // Set state to trigger re-render.
+//     setPos1Component(pos1Component);
+//   }, [warehouse_index, warehouse_data]);
+
 
   return (
     <div>
@@ -169,6 +195,7 @@ function Choose_POS() {
           </Select>
         </FormControl>
       </Container>
+      {/* {pos1Component} */}
       {warehouse_index ? (
         <POS1 warehouse_name={warehouse_data[warehouse_index].title} />
       ) : warehouse_index === 0 ? (

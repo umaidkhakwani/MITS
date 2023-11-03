@@ -90,6 +90,7 @@ function List_ftn_all(props) {
             </Grid>
           </Grid>
         </div>
+        <div style={{ overflowX: "auto", maxWidth: "100%" }}>
         <table
           style={{
             borderCollapse: "collapse",
@@ -102,7 +103,7 @@ function List_ftn_all(props) {
               <th style={{ width: "30px" }}></th>
               {combinedData.length > 0 &&
                 Object.keys(combinedData[0]).map((key) => (
-                  <th key={key} style={{ color: "#593993" }}>
+                  <th key={key} style={{ color: "#593993"}}>
                     {key}
                   </th>
                 ))}
@@ -141,6 +142,7 @@ function List_ftn_all(props) {
             ))}
           </tbody>
         </table>
+        </div>
       </Container>
    
   );

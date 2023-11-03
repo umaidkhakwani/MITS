@@ -22,6 +22,7 @@ import { styled } from "@mui/system";
 import List_ftn_all from "../../containers/List_ftn_all";
 import Modal from "@mui/material/Modal";
 import mits_logo from "../../images/MITS_logo.png";
+import convertToUTC from "../UTC_converter";
 
 //----------------------------------------------------------------------------------------------
 
@@ -159,6 +160,8 @@ const auth = getAuth(firebase_app);
 
 var API_LINK = "http://localhost:5000/";
 var sortedCustomers = "";
+var formattedDate;
+var formattedTime;
 
 function Transfer_products(props) {
   const [warehouse_index, set_warehouse_index] = React.useState("");
@@ -379,9 +382,25 @@ function Transfer_products(props) {
     set_transfer(updatedTransfer);
   };
 
+  const timeSetting = () => {
+    const currentDate = new Date();
+
+    const utcTimestamp = convertToUTC(currentDate);
+    // Format date in 'YYYY-MM-DD' format
+    formattedDate = utcTimestamp.split("T")[0];
+    // formattedDate = currentDate
+    formattedTime = utcTimestamp.split("T")[1].split(".")[0];
+
+    console.log(
+      `showing origional ${utcTimestamp}, formatted date and time ${formattedDate}, ${formattedTime}`
+    );
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     console.log("showing transfer details ", transfer);
+    timeSetting();
+
     axios
       .post(API_LINK + "transfer_quantity", { transfer })
       .then((response) => {
@@ -395,6 +414,30 @@ function Transfer_products(props) {
         // }
       })
       .catch((err) => console.error(err));
+
+
+    const requestOptions = {
+      email: transfer[0].email,
+      warehouse_from: transfer[0].from_warehouse,
+      SKU: transfer[0].sku,
+      quantity_sent: transfer[0].quantity,
+      status_sent: "Sent",
+      f_time: formattedTime,
+      f_date: formattedDate,
+      warehouse_to: transfer[0].to_warehouse,
+      quantity_received: transfer[0].quantity,
+      status_received: "Received",
+      d_time: formattedTime,
+      d_date: formattedDate,
+    };
+    console.log("showing request options", requestOptions);
+    axios
+    .post(API_LINK + "insert_transfer", requestOptions)
+    .then((response) => {
+     console.log("showing response of insert_transfer", response.data);
+    })
+    .catch((err) => console.error(err));
+
     set_submit(true);
     set_transfer([
       {
@@ -427,7 +470,8 @@ function Transfer_products(props) {
       <div style={{ maxHeight: "450px", overflowY: "scroll", margin: "20px" }}>
         {Array.isArray(sortedwarehouse) && sortedwarehouse.length > 0 ? (
           <List_ftn_all combinedData={sortedwarehouse} />
-        ) : Array.isArray(warehouse_all_data) && warehouse_all_data.length > 0 ? (
+        ) : Array.isArray(warehouse_all_data) &&
+          warehouse_all_data.length > 0 ? (
           <List_ftn_all combinedData={warehouse_all_data} />
         ) : (
           ""

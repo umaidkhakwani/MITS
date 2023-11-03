@@ -75,6 +75,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import axios from "axios";
+import SKU_prediction from "../components/Smart_tools/SKU_Prediction";
 
 const auth = getAuth(firebase_app);
 
@@ -595,7 +596,7 @@ export default function Sidebar() {
           ) : selectedItem === "Assign" ? (
             <Roles />
           ) : selectedItem === "Smart Tools" ? (
-            ""
+            <SKU_prediction />
           ) : selectedItem === "Setting" ? (
             <User_update />
           ) : (

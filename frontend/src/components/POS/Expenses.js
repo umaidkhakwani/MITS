@@ -7,26 +7,30 @@ import { useSelector } from "react-redux";
 
 import firebase_app from "../../Firebase/firebase";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import Create_Expense from "./Create_Expense";
+import Choose_Expense_POS from "./Choose_Expense_POS";
 
+// import ExportCSV from "./Export";
+// import ImportCSV from "./Import";
 const auth = getAuth(firebase_app);
 
 var API_LINK = "http://localhost:5000/";
-var sortedCustomers = "";
+// var sortedCustomers = "";
 
 function Expenses() {
   const [responseData_customers, setResponseData_customers] = useState([]);
   const [sortedCustomers, setSortedCustomers] = useState([]);
-  const [product_options, set_product_options] = useState("view_products");
+  const [product_options, set_product_options] = useState("view_expense");
 
   const company2 = useSelector((state) => state.users);
   console.log("showing company2", company2);
 
-  const handle_view_products = () => {
-    set_product_options("view_products");
+  const handle_view_expense = () => {
+    set_product_options("view_expense");
   };
 
-  const handle_create_products = () => {
-    set_product_options("create_products");
+  const handle_create_expense = () => {
+    set_product_options("create_expense");
   };
 
   const handle_import_products = () => {
@@ -65,25 +69,34 @@ function Expenses() {
   async function handle_get_cust_data() {
     const user = auth.currentUser;
     let email = "";
+    let user_company = {};
+
     if (user) {
       email = user.email;
+      user_company = company2.find((obj) => obj.email === email);
+      console.log("showing user company", user_company.company);
 
       const requestData = {
-        email: email,
+        company: user_company.company,
       };
 
       try {
         const response = await axios.post(
-          API_LINK + "get_company_products",
+          API_LINK + "get_expenses_by_company",
           requestData
         );
         console.log(
-          "data sent from backend in inventory products:: ",
+          "data sent from backend in expenses:: ",
           response.data[0]
         );
-        console.log(typeof response.data);
-        setSortedCustomers(response.data[0]);
-        setResponseData_customers(response.data);
+        const formattedData = response.data[0].map((entry) => {
+          return {
+            ...entry,
+            date: new Date(entry.date).toISOString().split('T')[0]
+          };
+        });
+        setSortedCustomers(formattedData);
+        setResponseData_customers(formattedData);
       } catch (error) {
         console.error("Error fetching data:", error);
         // Handle the error
@@ -101,12 +114,66 @@ function Expenses() {
 
   return (
     <div>
+      <Box margin="10px 20px">
+        <Stack spacing={2} direction="row" justifyContent="end">
+          {/* <Button
+            variant="outlined"
+            onClick={handle_export_products}
+            sx={{ color: "#593993", borderColor: "#593993" }}
+          >
+            Export
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handle_import_products}
+            sx={{ color: "#593993", borderColor: "#593993" }}
+          >
+            Import
+          </Button> */}
+          <Button
+            variant="outlined"
+            onClick={handle_create_expense}
+            sx={{ color: "#593993", borderColor: "#593993" }}
+          >
+            Create Expense
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handle_view_expense}
+            sx={{ color: "#593993", borderColor: "#593993" }}
+          >
+            View Expense
+          </Button>
+        </Stack>
+      </Box>
+
       <div>
-        {Array.isArray(sortedCustomers) && sortedCustomers.length > 0 ? (
-          <List_ftn_all combinedData={sortedCustomers} />
+      {product_options === "view_expense" ? (
+          Array.isArray(sortedCustomers) && sortedCustomers.length > 0 ? (
+            <List_ftn_all combinedData={sortedCustomers} />
+          ) : (
+            <h6>No data inserted</h6>
+          )
+        ) : product_options === "create_expense" ? (
+          <Choose_Expense_POS />
         ) : (
-          "No products found"
+          ""
         )}
+        {/* {product_options === "view_expense" ? (
+          Array.isArray(sortedCustomers) && sortedCustomers.length > 0 ? (
+            <List_ftn_all combinedData={sortedCustomers} />
+          ) : (
+            ""
+          )
+        ) : product_options === "create_expense" ? (
+          <Products_create />
+        ) : product_options === "export_products" ? (
+          <ExportCSV details={sortedCustomers}/>
+        ) : product_options === "import_products" ? (
+          <ImportCSV />
+        ) :(
+          ""
+        )} */}
       </div>
     </div>
   );

@@ -29,20 +29,48 @@ function Sales_per_day(props) {
   //   // const newData = getDataBasedOnDateRange(props.obj_daySales, dateRange);
   //   // const x_axis_data = Array.from(newData.keys());
   //   // const y_axis_data = Array.from(newData.values());
+    console.log("sorted chart",props.obj_daySales);
 
-    const x_data = Array.from(
-      Object.keys(props.obj_daySales).reduce((acc, key) => {
-        acc.push(key);
-        return acc;
-      }, [])
-    );
+    // const x_data = Array.from(
+    //   Object.keys(props.obj_daySales).reduce((acc, key) => {
+    //     acc.push(key);
+    //     return acc;
+    //   }, [])
+    // );
 
-    const y_data = Array.from(
-      Object.values(props.obj_daySales).reduce((acc, value) => {
-        acc.push(parseFloat(value.toFixed(2)));
-        return acc;
-      }, [])
-    );
+    // const y_data = Array.from(
+    //   Object.values(props.obj_daySales).reduce((acc, value) => {
+    //     acc.push(parseFloat(value.toFixed(2)));
+    //     return acc;
+    //   }, [])
+    // );
+
+    console.log("obj_daySales is ",props.obj_daySales);
+
+    const x_data = Array.from(Object.keys(props.obj_daySales)).sort();
+    var y_data =[]
+    for ( let x in x_data){
+      // console.log("x_data is ",x_data[x]);
+      y_data.push(props.obj_daySales[x_data[x]]);
+    }
+    // console.log("y_data is ",y_data);
+    // const y_data = Array.from(Object.values(props.obj_daySales).map(value => parseFloat(value.toFixed(2))));
+    
+    
+    // console.log("Sorted x_data:", x_data);
+    // console.log("Sorted y_data:", y_data);
+
+    // Sort x_data and keep y_data values aligned
+    // x_data.sort((a, b) => a.localeCompare(b));
+    // y_data.sort((a, b) => {
+    //   const aIndex = x_data.indexOf(a);
+    //   const bIndex = x_data.indexOf(b);
+    //   return aIndex - bIndex;
+    // });
+    
+
+
+    // if(props.obj_daySales)
   //   console.log('x',x_axis_data,'y',y_axis_data )
   //   console.log("showing range ", dateRange)
 
@@ -55,28 +83,32 @@ function Sales_per_day(props) {
   const calculateData = (range) => {
     const dataMap = new Map();
     const currentDate = new Date();
+    // console.log("currentDate is ",x_data.sort());
     for (let i = 0; i < x_data.length; i++) {
       const date = new Date(x_data[i]);
       let key;
+      // console.log("date is in sales chart",date);
   
       if (range === "weekly") {
         const daysDiff = Math.floor((currentDate - date) / (24 * 60 * 60 * 1000));
         if (daysDiff >= 0 && daysDiff <= 7) {
           key = date.toISOString().split("T")[0];
-          console.log("weekly key is ",key)
+          // console.log("weekly key is ",key)
         }
       } else if (range === "monthly") {
+
         const daysDiff = Math.floor((currentDate - date) / (24 * 60 * 60 * 1000));
+        console.log("daysDiff is ",date);
         if (daysDiff >= 0 && daysDiff < 30) {
           key = date.toISOString().split("T")[0];
-          console.log("monthly key is ",key)
+          // console.log("monthly key is ",key)
 
         }
       } else if (range === "yearly") {
         const monthsDiff = (currentDate.getFullYear() - date.getFullYear()) * 12 + (currentDate.getMonth() - date.getMonth());
         if (monthsDiff >= 0 && monthsDiff < 12) {
           key = `${date.getFullYear()}-${date.getMonth() + 1}`;
-          console.log("yearly key is ",key)
+          // console.log("yearly key is ",key)
 
         }
       }
@@ -92,7 +124,7 @@ function Sales_per_day(props) {
     return dataMap;
   };
   
-  
+
   const newData = calculateData(dateRange);
   const x_axis_data = Array.from(newData.keys());
   const y_axis_data = Array.from(newData.values());

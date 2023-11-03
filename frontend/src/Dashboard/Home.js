@@ -23,9 +23,11 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import {
   Avatar,
   Badge,
+  Button,
   Card,
   CardContent,
   CardHeader,
+  Container,
   Grid,
   Menu,
   MenuItem,
@@ -34,12 +36,15 @@ import { red, green } from "@mui/material/colors";
 import Header_ftn from "../containers/Header_ftn";
 
 import logo from "../images/company_logo.png";
+import RefreshIcon from "@mui/icons-material/Refresh";
 import Dashboard_Cards from "../containers/cards";
 import Analytics from "../components/Analytics";
 import axios from "axios";
 
 import { useDispatch } from "react-redux";
 import { saveCompany } from "../redux2/save_companySlice";
+
+import MITS_gif from "../images/MITS_Logo.gif";
 
 import firebase_app from "../Firebase/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -48,51 +53,113 @@ const auth = getAuth(firebase_app);
 
 var API_LINK = "http://localhost:5000/";
 var email = "";
+var company = "";
+
+
 
 function Home() {
   const dispatch = useDispatch();
+  const [shopify_warehouse_details, setshopify_warehouse_details] = useState([]);
+  const [company_data, set_company_data] = useState();
+  const [wait, set_wait] = useState(false);
 
-  const fetch_company = async () => {
-    // Get the current user
-    const user = auth.currentUser;
-    let company = "";
-    let user_id = "";
-    if (user) {
-      email = user.email;
-      const requestData = {
-        email: email,
-      };
 
-      await axios
-        .post(API_LINK + "get_user", requestData)
-        .then((response) => {
-          console.log("getting user data :: ", response.data[0].company);
-          console.log(typeof response.data);
-          const user_details ={
-            company : response.data[0].company,
-            id : response.data[0].id,
-            email: email,
-            password: response.data[0].password,
-          }
-          
-          console.log("showinf", user_details);
-          if(user_details.company){
-            dispatch(saveCompany(user_details));
-          }
-        })
-        .catch((err) => console.error(err));
+  const fetchCompanyData = async () => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const email = user.email;
+        const requestData = {
+          email: email,
+        };
+
+        const response = await axios.post(API_LINK + "get_user", requestData);
+        const userData = {
+          company: response.data[0].company,
+          id: response.data[0].id,
+          email: email,
+          password: response.data[0].password,
+        };
+
+        if (userData.company) {
+          dispatch(saveCompany(userData));
+          set_company_data(response.data[0].company);
+
+          const fetch_shopify_warehouse = {
+            company: response.data[0].company,
+          };
+
+          const response2 = await axios.post(
+            API_LINK + "get_shopify_warehouse_By_company",
+            fetch_shopify_warehouse
+          );
+
+          setshopify_warehouse_details(response2.data);
+        }
+      }
+    } catch (error) {
+      console.error(error);
     }
   };
 
   useEffect(() => {
-    fetch_company();
-  }, []);
+    fetchCompanyData();
+  }, []); // This will call fetchCompanyData once when the component mounts
 
   return (
-    // <Box component="main">
     <div>
       <Dashboard_Cards />
-      <Analytics />
+      {Array.isArray(shopify_warehouse_details) && shopify_warehouse_details.length > 0 ? (
+        <div>
+          <Analytics
+            shopify_data={shopify_warehouse_details}
+            user_company={company_data}
+          />
+          {console.log("1223343")}
+        </div>
+      ) : (
+        <div>
+          <Button
+            onClick={fetchCompanyData} // Call the same function to refresh data
+            style={{
+              backgroundColor: "#ce93d8",
+              color: "red",
+              cursor: "pointer",
+              border: "none",
+              padding: "2px 8px",
+              borderRadius: "10px",
+              opacity: 0.9,
+            }}
+          >
+            <RefreshIcon style={{ color: "black" }} />
+          </Button>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              minHeight: "60vh",
+            }}
+          >
+            <Container
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                minHeight: "50vh",
+              }}
+            >
+              <img
+                src={MITS_gif}
+                alt="Loading..."
+                style={{ width: "100px", height: "100px" }}
+              />
+              <Typography>Sorr, No data to show</Typography>
+            </Container>
+          </div>
+        </div>
+      )}
     </div>
 
     //<Header_ftn heading="Overview" />

@@ -14,7 +14,7 @@ const create_warehouse_product = async () => {
     UNIQUE KEY (email, warehouse, SKU),
     FOREIGN KEY (email) REFERENCES warehouse(email) ON DELETE CASCADE,
     FOREIGN KEY (SKU) REFERENCES product_list(SKU)
-  );
+    );
   `;
   const pool = await connection.getConnection();
   try {
@@ -137,10 +137,21 @@ const change_inventory = async (email, warehouse, sku, quantity) => {
   }
 };
 
+const import_warehuse_products = async (query) => {
+  // const sql = "SELECT * FROM product_list WHERE company = ?";
+  const pool = await connection.getConnection();
+  try {
+    return await pool.query(query);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
 module.exports = {
   create_warehouse_product,
   insert_warehouse_product,
   getUserByEmailandWarehouse,
+  import_warehuse_products,
   getUserByEmail,
   getUserByCompany,
   change_inventory,

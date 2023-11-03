@@ -57,6 +57,8 @@ function Warehouse_create() {
       time: "",
     },
   ]);
+
+
   const company2 = useSelector((state) => state.users);
   console.log("showing company2 in create warehouse", company2[0]);
 
@@ -169,12 +171,12 @@ function Warehouse_create() {
           (company) => company.email === email
         );
         console.log("filtered companies", filteredCompanies[0]);
-        try {
-          await handle_create_warehouse("email", email);
-          console.log("Current user's email:", email);
-        } catch (error) {
-          console.error("Error handling warehouse creation:", error);
-        }
+        // try {
+        //   await handle_create_warehouse("email", email);
+        //   console.log("Current user's email:", email);
+        // } catch (error) {
+        //   console.error("Error handling warehouse creation:", error);
+        // }
       } else {
         console.log("No user is currently signed in.");
       }
@@ -226,7 +228,7 @@ function Warehouse_create() {
               sx={{ color: "#593993", borderColor: "#593993" }}
             >
               {/* Create POS */}
-              Create Warehouse
+              Create POS
             </Button>
             <Button
               variant="outlined"
@@ -234,7 +236,7 @@ function Warehouse_create() {
               sx={{ color: "#593993", borderColor: "#593993" }}
             >
               {/* Create Warehouse */}
-              Create POS
+              Create Warehouse
             </Button>
             <Button
               variant="outlined"
@@ -264,7 +266,7 @@ function Warehouse_create() {
               }}
             >
               {/* Add your Warehouse */}
-              Add your POS
+              Add your Warehouse
             </Typography>
 
             {/* <div>
@@ -322,7 +324,7 @@ function Warehouse_create() {
                       id="standard-basic-1"
                       label="Address e.g (Model town link road)"
                       variant="standard"
-                      value={warehouse_create.vendor}
+                      value={warehouse_create.address}
                       onChange={(e) => {
                         handle_create_warehouse("address", e.target.value);
                         isFormValid();
@@ -334,7 +336,7 @@ function Warehouse_create() {
                       id="standard-basic-1"
                       label="City"
                       variant="standard"
-                      value={warehouse_create.price}
+                      value={warehouse_create.city}
                       onChange={(e) => {
                         handle_create_warehouse("city", e.target.value);
                         isFormValid();
@@ -346,7 +348,7 @@ function Warehouse_create() {
                       id="standard-basic-1"
                       label="Country"
                       variant="standard"
-                      value={warehouse_create.sku}
+                      value={warehouse_create.country}
                       onChange={(e) => {
                         handle_create_warehouse("country", e.target.value);
                         isFormValid();

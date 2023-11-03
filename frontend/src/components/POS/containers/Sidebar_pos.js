@@ -75,6 +75,8 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import axios from "axios";
+import Choose_POS_inventory from "./Choose_POS_inventory";
+import Choose_POS_return from "./Choose_POS_return";
 
 const auth = getAuth(firebase_app);
 
@@ -527,7 +529,7 @@ export default function Sidebar_pos() {
             <Choose_POS />
           ) : selectedItem === "Return" ? (
             // <Return_POS />
-            <Choose_POS />
+            <Choose_POS_return />
           ) :  selectedItem === "Hold Sales" ? (
             <Hold_Sales />
           ) : selectedItem === "POS Closing" ? (
@@ -537,7 +539,7 @@ export default function Sidebar_pos() {
           ) :selectedItem === "Expenses" ? (
             <Expenses />
           ) : selectedItem === "Inventory" ? (
-            <POS_inventory />
+            <Choose_POS_inventory />
           ) : selectedItem === "Customers" ? (
             <POS_Customers />
         //   ) : selectedItem === "POS" ? (

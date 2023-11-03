@@ -64,7 +64,7 @@ function Warehouse_list(props) {
   //   var combinedData =[];
 
   const handle_combine = async (warehouseTotal, warehouseDetail) => {
-    console.log("warehouseDetail", warehouseDetail);
+    console.log("warehouseDetail in handle_combine", warehouseDetail);
     console.log("warehouseTotal", warehouseTotal);
     const data_detail = await warehouseTotal.map((totalItem) => {
       const matchingDetailItem = warehouseDetail.find(
@@ -126,6 +126,8 @@ function Warehouse_list(props) {
 
     // converting categorized data to [0:{}, 1:{}...]
     var final_data = [];
+    console.log("categorizedData:", categorizedData);
+
 
     // Loop through the values of categorizedData
     for (const warehouseData of Object.values(categorizedData)) {
@@ -137,13 +139,6 @@ function Warehouse_list(props) {
 
     setcombinedData(final_data);
     setdata_warehouse(data_detail);
-    // setcombinedData(data_detail);
-
-    // {<List_ftn combinedData ={combinedData}/>}
-
-    //   data_detail.map((totalItem) => {
-    //       console.log("combinedData 2 ", totalItem.title);
-    //   })
   };
 
   const fetchProductCount = async () => {
@@ -167,10 +162,10 @@ function Warehouse_list(props) {
       .post(API_LINK + "get_all_warehouse_products", requestData)
       .then((response) => {
         warehouse_total_products = response.data[0];
-        // console.log(
-        //   "showing data from warehouse products :: ",
-        //   warehouse_total_products
-        // );
+        console.log(
+          "showing data from warehouse_total_products :: ",
+          warehouse_total_products
+        );
         setWarehouseTotal(warehouse_total_products);
 
         console.log(typeof response.data);

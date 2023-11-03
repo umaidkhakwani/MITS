@@ -14,6 +14,7 @@ var API_LINK = "http://localhost:5000/";
 function template() {
 
   const user = auth.currentUser;
+  var email =""
   const company2 = useSelector((state) => state.users);
   console.log("showing company2 in add roles", company2[0]);
 

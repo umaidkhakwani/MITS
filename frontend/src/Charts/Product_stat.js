@@ -37,7 +37,7 @@ function Product_stat(props) {
     console.log(`Product: ${product.title}`);
     console.log(`Quantity: ${product.quantity}`);
     console.log(`product detail: ${product}`);
-
+    
     if (displayRange === "Unit") {
       console.log("Created At:");
       for (let j = 0; j < product.created_at.length; j++) {
@@ -45,7 +45,17 @@ function Product_stat(props) {
         const createdAt = product.created_at[j];
         console.log(createdAt);
         console.log(`Title: ${lineItem.title}, Quantity: ${lineItem.quantity}`);
-        resultArray.push({ x: createdAt, y: lineItem.quantity });
+        
+        // Check if createdAt already exists in resultArray
+        const existingEntry = resultArray.find(entry => entry.x === createdAt);
+        
+        if (existingEntry) {
+          // If it exists, add the quantity to the existing entry
+          existingEntry.y += lineItem.quantity;
+        } else {
+          // If it doesn't exist, create a new entry
+          resultArray.push({ x: createdAt, y: lineItem.quantity });
+        }
       }
     } else {
       console.log("Created At:");
@@ -53,11 +63,22 @@ function Product_stat(props) {
         const lineItem = product.line_items[j];
         const createdAt = product.created_at[j];
         console.log(createdAt);
-        let total = (lineItem.quantity * lineItem.price).toFixed(2)
+        let total = (lineItem.quantity * lineItem.price).toFixed(2);
         console.log(`Title: ${lineItem.title}, Sales: ${total}`);
-        resultArray.push({ x: createdAt, y: total });
+        
+        // Check if createdAt already exists in resultArray
+        const existingEntry = resultArray.find(entry => entry.x === createdAt);
+        
+        if (existingEntry) {
+          // If it exists, add the total sales to the existing entry
+          existingEntry.y += parseFloat(total);
+        } else {
+          // If it doesn't exist, create a new entry
+          resultArray.push({ x: createdAt, y: parseFloat(total) });
+        }
       }
     }
+    
     setData(resultArray);
   };
 

@@ -1,6 +1,8 @@
 const express = require("express");
 const request = require("request");
 const cors = require("cors");
+const axios = require("axios");
+const bodyParser = require("body-parser");
 const connection = require("./Database/db");
 const userModel = require("./Database/userModel");
 const warehouse_model = require("./controller/Warehouse_controller");
@@ -9,6 +11,10 @@ const warehouse_products_details = require("./controller/Warehouse_product_detai
 const transfer_quantity = require("./controller/Transfer");
 const warehouse_counter = require("./controller/Warehouse_counter");
 const supplier_model = require("./controller/Suppliers_controller");
+const pos_closing = require("./controller/POS_closing_controller");
+const pos_expenses = require("./controller/Expenses_controller");
+const pos_customers = require("./controller/Customer_controller");
+const shopify_pos = require("./controller/Shopify_warehouse_controller");
 
 const shopify = require("shopify-api-node");
 
@@ -33,11 +39,18 @@ app.use(cors());
 app.use(express.json());
 const PORT = process.env.port || 5000;
 
-const shopify_api_key = "169f5d9abebdf0dfac8ddad34aa6c5bd";
-const shopify_token_pass = "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";
+const shopify_api_key = "8deb91f0ff4f16a37ba275db50dc4121";
+const shopify_token_pass = "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";
 const endpoint = "products";
 const product_id = "8540355002668";
-const store = "dummy-test-store-001";
+const store = "nexos-9102";
+
+// Nexos shopify warehouse
+// Bahria Town
+// Lahore
+// Pakistan
+
+app.use(bodyParser.json());
 
 //----------------------------  USER REGISTRATION -------------------------------------------------------------------
 
@@ -187,15 +200,312 @@ app.post("/create_supplier", async (req, res) => {
   }
 });
 
-//----------------------------  Warehouse -------------------------------------------------------------------
+//----------------------------  PREDICTION (SMART TOOLS) -------------------------------------------------------------------
 
+app.post("/get_prediction", async (req, res) => {
+  const { sku, data } = req.body;
+  const dataArray = JSON.parse(data);
+  console.log(
+    `inside prediction:: sku is : ${sku}, dataArray is : ${JSON.stringify(
+      dataArray
+    )}`
+  );
+  // res.send("prediction done");
+
+  const requestData = {
+    sku,
+    data: dataArray,
+  };
+
+  // Send a POST request to the Flask "/train" route
+  axios
+    .post("http://127.0.0.1:4000/train", requestData)
+    .then((response) => {
+      if (response.data.predictions) {
+        console.log(
+          "showing response in prediction",
+          response.data.predictions
+        );
+        res.send(response.data.predictions);
+      }
+    })
+    .catch((error) => {
+      res.status(500).send("Error sending POST request to Flask");
+    });
+});
+
+//----------------------------  POS CLOSING -------------------------------------------------------------------
 warehouse_model.create_warehouse();
 warehouse_products_details.create_warehouse_product_details();
+pos_closing.create_pos_closing();
+shopify_pos.create_shopify_warehouse();
+
+app.post("/get_warehouse_id", async (req, res) => {
+  const {
+    email,
+    title,
+    description,
+    cost_price,
+    total_amount,
+    user_paid,
+    transaction,
+    time,
+    date,
+  } = req.body;
+  console.log(`inside POS CLOSING:: email is : ${email},  title is : ${title}`);
+
+  // Check if user already exists
+  const warehouse_details = await warehouse_model.getUserByEmailandWarehouse(
+    email,
+    title
+  );
+  console.log("showing warehouse_details", warehouse_details);
+  const { id, company } = warehouse_details[0][0];
+  console.log(`inside POS CLOSING:: email is : ${id},  title is : ${company}`);
+
+  const pos_closing_data = {
+    id,
+    description,
+    company,
+    total_amount,
+    cost_price,
+    user_paid,
+    transaction,
+    time,
+    date,
+  };
+  console.log("showing pos_closing_data", pos_closing_data);
+
+  try {
+    await pos_closing.insert_pos_closing(pos_closing_data);
+    console.error("POS inserted successfully");
+    res.status(201).json({ message: "POS inserted successfully" });
+  } catch (error) {
+    console.error("Error in POS insert:", error);
+    res.status(500).json({ message: "Error in POS insert" });
+  }
+
+  // res.send(warehouse_details);
+
+  // try {
+  //   const new_warehouse = {
+  //     email,
+  //     title,
+  //     address,
+  //     city,
+  //     country,
+  //     association,
+  //     role,
+  //     company,
+  //     date,
+  //     time,
+  //   };
+  //   await warehouse_model.insert_warehouse(new_warehouse);
+
+  //   res.status(201).json({ message: "Warehouse created successfully" });
+  // } catch (error) {
+  //   console.error("Error creating warehouse:", error);
+  //   res.status(500).json({ message: "Error creating warehouse" });
+  // }
+});
+
+app.post("/pos_stock_updation", async (req, res) => {
+  const { company, warehouse_name, SKU, quantity } = req.body;
+  console.log(
+    `inside pos_stock_updation : company is : ${company},  SKU is : ${SKU},  quantity is : ${quantity},  warehouse_name is : ${warehouse_name}`
+  );
+
+  try {
+    await pos_closing.update_pos_stock(company, warehouse_name, SKU, quantity);
+    console.error("POS stock updated successfully");
+    res.status(201).json({ message: "POS stock updated successfully" });
+  } catch (error) {
+    console.error("Error in POS stock update:", error);
+    res.status(500).json({ message: "Error in POS stock update" });
+  }
+});
+
+app.post("/pos_stock_details", async (req, res) => {
+  const { company } = req.body;
+  console.log(`inside pos_stock_details : company is : ${company}`);
+
+  let pos_stock_details = [];
+
+  try {
+    pos_stock_details = await pos_closing.get_pos_details_Oncompany(company);
+    // console.log("pos_stock_details",pos_stock_details);
+    res.send(pos_stock_details);
+  } catch (error) {
+    console.error("Error in POS stock update:", error);
+    res.status(500).json({ message: "Error in POS stock update" });
+  }
+});
+
+//----------------------------  EXPENSE -------------------------------------------------------------------
+
+pos_expenses.create_expenses();
+
+app.post("/create_pos_expense", async (req, res) => {
+  const {
+    email,
+    warehouse,
+    company,
+    title,
+    // description,
+    // picture_url,
+    // cost_price,
+    retail_price,
+    time,
+    date,
+    // quantity,
+    // SKU,
+    // barcode,
+    // weight,
+    // size,
+    // color,
+  } = req.body.product;
+  console.log("inside create expense", email);
+
+  console.log("showing request body  create expense", req.body);
+  let userToken = 0;
+
+  const new_warehouse_products = {
+    email,
+    warehouse,
+    company,
+    title,
+    // description,
+    // picture_url,
+    // cost_price,
+    retail_price,
+    time,
+    date,
+    // quantity,
+    // SKU,
+    // barcode,
+    // weight,
+    // size,
+    // color,
+  };
+  console.log("showing new_warehouse_products ::", new_warehouse_products);
+  try {
+    await pos_expenses.insert_expense(new_warehouse_products);
+
+    res.status(201).json({ message: "Expense created successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
+
+app.post("/get_expenses_by_company", async (req, res) => {
+  const { company } = req.body;
+
+  // Check if user already exists
+  const existingUser = await pos_expenses.getUserByCompany(company);
+  if (existingUser[0].length > 0) {
+    res.send(existingUser);
+  } else {
+    return res.status(409).json({ message: "User warehouse not found" });
+  }
+});
+
+//-----------------------------------------------------------------------------------------------------------
+
+//----------------------------  POS CUSTOMERS ---------------------------------------------------------------
+
+pos_customers.create_customers();
+
+app.post("/create_pos_customers", async (req, res) => {
+  const { name, email, cus_email, company, phone, date, time } = req.body;
+  console.log("inside create POS customers", email);
+
+  console.log("showing request body POS create customers", req.body);
+  let userToken = 0;
+
+  const new_customer = {
+    email,
+    name,
+    cus_email,
+    company,
+    phone,
+    date,
+    time,
+  };
+  console.log("showing new_customer ::", new_customer);
+  try {
+    await pos_customers.insert_customer(new_customer);
+
+    console.log("POS customers created successfully");
+
+    res.status(201).json({ message: "POS customers created successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "An error occurred" });
+  }
+});
+
+app.post("/get_customers_by_company", async (req, res) => {
+  const { company } = req.body;
+
+  // Check if user already exists
+  const existingUser = await pos_customers.getUserByCompany(company);
+  if (existingUser[0].length > 0) {
+    res.send(existingUser);
+  } else {
+    return res.status(409).json({ message: "User warehouse not found" });
+  }
+});
+
+//-----------------------------------------------------------------------------------------------------------
+
+//----------------------------  IMPORT CSV  -------------------------------------------------------------------
+
+app.post("/import_product_details", async (req, res) => {
+  const { query } = req.body;
+  // console.log("showing req body  in get warehouse products", req.body);
+
+  console.log("showing email in import_product_details", query);
+
+  try {
+    await warehouse_products_details.import_product_details(query);
+    res.status(201).json({ message: "Product Details imported successfully" });
+  } catch (error) {
+    console.error("Error getting product details:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting product details", error: error.message });
+  }
+});
+
+app.post("/import_warehouse_products", async (req, res) => {
+  const { query } = req.body;
+  // console.log("showing req body  in get warehouse products", req.body);
+
+  console.log("showing email in import_product_details", query);
+
+  try {
+    await warehouse_products.import_warehuse_products(query);
+    res.status(201).json({ message: "Product Details imported successfully" });
+  } catch (error) {
+    console.error("Error getting product details:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting product details", error: error.message });
+  }
+});
+
+//-----------------------------------------------------------------------------------------------------------
+
+//----------------------------  Warehouse -------------------------------------------------------------------
 
 // Registration route
 app.post("/create_warehouse", async (req, res) => {
   const {
     email,
+    store_name,
+    api_key,
+    token_pass,
     title,
     address,
     city,
@@ -205,15 +515,13 @@ app.post("/create_warehouse", async (req, res) => {
     date,
     time,
   } = req.body.product;
-  console.log(
-    `inside create warehouse:: email is : ${email}, date is : ${date}, time is : ${time}, association is : ${association}`
-  );
+  console.log(`inside create warehouse:: ${company}`);
   let role = "0";
+  // let warehouse_id = "";
 
   // Check if user already exists
-  const existingWarehouse = await warehouse_model.getUserByEmailandStore(
-    email,
-    association
+  const existingWarehouse = await warehouse_model.get_Primary_Warehouse(
+    company
   );
   console.log("showing existing warehouse", existingWarehouse[0]);
   if (existingWarehouse[0].length > 0) {
@@ -231,6 +539,41 @@ app.post("/create_warehouse", async (req, res) => {
         time,
       };
       await warehouse_model.insert_warehouse(new_warehouse);
+
+      if (association === "Shopify") {
+        try {
+          const fetch_warehouse_details =
+            await warehouse_model.getUserByEmailandWarehouse(email, title);
+          let id = fetch_warehouse_details[0][0].id;
+          console.log(
+            "showing warehouse details",
+            fetch_warehouse_details[0][0].id
+          );
+          // console.log("showing id and all data in warehouse", );
+          // const { id } = await warehouse_model.getUserByEmailandWarehouse(
+          //   email,
+          //   title
+          // );
+          // console.log("showing warehouse id in create_warehouse", id);
+          const new_shopify_warehouse = {
+            id,
+            title,
+            email,
+            store_name,
+            api_key,
+            token_pass,
+            company,
+            date,
+            time,
+          };
+          await shopify_pos.insert_shopify_warehouse(new_shopify_warehouse);
+
+          console.log("Shopify warehouse created successfully");
+        } catch (error) {
+          console.error("Error creating warehouse:", error);
+          res.status(500).json({ message: "Error creating warehouse" });
+        }
+      }
 
       res.status(201).json({ message: "Warehouse created successfully" });
     } catch (error) {
@@ -300,7 +643,7 @@ app.post("/get_warehouse_By_company", async (req, res) => {
   console.log("showing company in get warehouse", company);
   try {
     const warehouse_list = await warehouse_model.getUserByCompany(company);
-    // console.log(warehouse_list[0]);
+    // console.log("showing warehouse_list in get_warehouse_By_company",warehouse_list[0]);
 
     // Send the warehouse list in the response
     res.send(warehouse_list[0]);
@@ -594,6 +937,109 @@ app.post("/get_counter", async (req, res) => {
 });
 
 //----------------------------  TRANSFER STOCK -------------------------------------------------------------------
+transfer_quantity.create_transfer();
+
+app.post("/insert_transfer", async (req, res) => {
+  const {
+    // id,
+    email,
+    // company,
+    warehouse_from,
+    SKU,
+    quantity_sent,
+    status_sent,
+    f_time,
+    f_date,
+    warehouse_to,
+    quantity_received,
+    status_received,
+    d_time,
+    d_date,
+  } = req.body;
+  console.log(
+    `showing req body in transfer_quantity ${email}, ${SKU}, ${warehouse_from}, ${warehouse_to}, ${quantity_sent} `
+  );
+  // console.log("showing req body in transfer_quantity ", req.body);
+
+  // console.log("showing email in warehouse products", email);
+  
+  let company = "";
+  let id = "";
+  try {
+    const warehouse_data = await warehouse_products.getUserByEmailandWarehouse(
+      email,
+      warehouse_from
+    );
+    company = warehouse_data[0][0].company;
+    id = warehouse_data[0][0].id;
+  } catch (error) {
+    console.log("error in insert_transfer", error);
+  }
+  try {
+    const transfer_data = {
+      id,
+      email,
+      company,
+      warehouse_from,
+      SKU,
+      quantity_sent,
+      status_sent,
+      f_time,
+      f_date,
+      warehouse_to,
+      quantity_received,
+      status_received,
+      d_time,
+      d_date,
+    };
+    console.log("showing warehouse_data company in insert_transfer", company);
+  
+    const response = await transfer_quantity.insert_transfer(transfer_data);
+    console.log("showing response for insert_transfer ::", response);
+
+    // Send the warehouse list in the response
+    res.send("Successfully transferred");
+  } catch (error) {
+    console.error("Error inserting for transfer:", error);
+    res
+      .status(500)
+      .json({ message: "Error inserting transfer", error: error.message });
+  }
+});
+
+app.post("/get_transferDetails_By_company", async (req, res) => {
+  const { email } = req.body;
+  console.log("showing company in get transfer:: ", email);
+  let company = "";
+  try {
+    const existingUser = await userModel.getUserByEmail(email);
+    company = existingUser[0][0].company;
+    console.log("showing company in get_transferDetails_By_company:: ", company);
+  } catch (error) {
+    console.error("Error in get_transferDetails_By_company:", error);
+    res
+      .status(500)
+      .json({ message: "Error in get_transferDetails_By_company", error: error.message });
+  }
+  try {
+    const warehouse_list = await transfer_quantity.getUserByCompany(company);
+    console.log(
+      "showing warehouse_list in get_transferDetails_By_company",
+      warehouse_list
+    );
+
+    // Send the warehouse list in the response
+    res.send(warehouse_list[0]);
+  } catch (error) {
+    console.error("Error getting warehouse list in get transfer:", error);
+    res
+      .status(500)
+      .json({
+        message: "Error getting warehouse list in get transfer",
+        error: error.message,
+      });
+  }
+});
 
 app.post("/transfer_quantity", async (req, res) => {
   const { email, sku, from_warehouse, to_warehouse, quantity } =
@@ -835,20 +1281,60 @@ app.get("/get_customers", (req, res) => {
   });
 });
 
+//-------------------------------------------------------------------------------------------------------------------
+
+//----------------------------  SHOPIFY WAREHOUSE -------------------------------------------------------------------
+
+app.post("/get_shopify_warehouse_By_company", async (req, res) => {
+  const { company } = req.body;
+  console.log("showing company in get warehouse", company);
+  try {
+    const warehouse_list = await shopify_pos.getUserByCompany(company);
+    console.log(
+      "showing warehouse_list in SHOPIFY WAREHOUSE  get_warehouse_By_company",
+      warehouse_list
+    );
+
+    // Send the warehouse list in the response
+    res.send(warehouse_list[0]);
+  } catch (error) {
+    console.error("Error getting warehouse list:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting warehouse list", error: error.message });
+  }
+});
+
+//-------------------------------------------------------------------------------------------------------------------
+
 //----------------------------  ANALYTICS -------------------------------------------------------------------
 
-app.get("/get_analytics/total_orders", (req, res) => {
+app.post("/get_analytics/total_orders", (req, res) => {
+  const { store_name, api_key, token_pass } = req.body;
+
   let get_analytics = {
     method: "GET",
-    url: `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/orders.json?status=any
+    url: `https://${api_key}:${token_pass}@${store_name}.myshopify.com/admin/api/2023-07/orders.json?status=any
     `,
     headers: {
       "Content-type": "application/json",
     },
   };
 
+  // let get_analytics = {
+  //   method: "GET",
+  //   url: `https://${shopify_api_key}:${shopify_token_pass}@${store}.myshopify.com/admin/api/2023-07/orders.json?status=any
+  //   `,
+  //   headers: {
+  //     "Content-type": "application/json",
+  //   },
+  // };
+
   request(get_analytics, function (error, response) {
     if (error) throw new Error(error);
+    console.log(
+      `showing req body in get_analytics/total_orders ${api_key}, ${token_pass}, ${store_name} `
+    );
     const data = JSON.parse(response.body);
     const formattedData = JSON.stringify(data, null, 4);
     res.send(formattedData);

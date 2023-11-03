@@ -85,11 +85,11 @@ const getUserByEmailandWarehouse = async (email, title) => {
     }
   };
 
-  const get_Primary_Warehouse = async (email) => {
-    const sql = "SELECT * FROM warehouse WHERE email = ? AND role = '1'";
+  const get_Primary_Warehouse = async (company) => {
+    const sql = "SELECT * FROM warehouse WHERE company = ? AND role = '1'";
     const pool = await connection.getConnection();
     try {
-      return await pool.query(sql, [email]);
+      return await pool.query(sql, [company]);
     } finally {
       pool.release(); // Release the connection back to the pool
     }

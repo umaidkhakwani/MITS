@@ -182,6 +182,8 @@ function POS1({ warehouse_name }) {
     );
     console.log("filtered companiesin POS1", filteredCompanies[0]);
 
+    let updatedWarehouseProducts = [];
+    let updatedWarehouseProducts_filtered = [];
     console.log("requestData:: ", requestData);
     await axios
       .post(API_LINK + "get_company_products", requestData)
@@ -196,7 +198,6 @@ function POS1({ warehouse_name }) {
           company: filteredCompanies[0].company,
         };
 
-
         axios
           .post(API_LINK + "get_warehouse_byCompany", requestData2)
           .then((response) => {
@@ -206,28 +207,90 @@ function POS1({ warehouse_name }) {
               "showing data from warehouse_by_company :: ",
               warehouse_by_company
             );
+            updatedWarehouseProducts = warehouse_by_company.filter(
+              (product) => {
+                return product.warehouse === warehouse_name;
+              }
+            );
+            updatedWarehouseProducts_filtered = warehouse_total_products.filter(
+              (product) => {
+                // Check if SKU matches the SKU of the product in updatedWarehouseProducts
+                const matchingProduct = updatedWarehouseProducts.find(
+                  (updatedProduct) => updatedProduct.SKU === product.SKU
+                );
+
+                if (matchingProduct) {
+                  // Attach the quantity from the matching product
+                  product.quantity = matchingProduct.quantity;
+                  return true;
+                }
+
+                return false;
+              }
+            );
+            // console.log("updatedWarehouseProducts_filtered", updatedWarehouseProducts_filtered);
+            // console.log("updatedWarehouseProducts", updatedWarehouseProducts);
+            // setWarehouseTotal(warehouse_total_products);
+            setWarehouseTotal(updatedWarehouseProducts_filtered);
+            console.log("warehouse_total_products", warehouse_total_products);
+            console.log("updatedWarehouseProducts", updatedWarehouseProducts);
+            console.log(
+              "updatedWarehouseProducts_filtered",
+              updatedWarehouseProducts_filtered
+            );
+
+            const filteredData = updatedWarehouseProducts_filtered.map(
+              ({
+                SKU,
+                barcode,
+                company,
+                title,
+                retail_price,
+                quantity,
+                weight,
+                size,
+                color,
+              }) => ({
+                SKU,
+                barcode,
+                company,
+                title,
+                retail_price,
+                quantity,
+                weight,
+                size,
+                color,
+              })
+            );
+            console.log("filteredData in POS 1", filteredData);
+
+            setcombinedData(filteredData);
+            // setcombinedData(warehouse_total_products);
+
+            console.log(typeof response.data);
+            let total = 0;
+
+            for (let i = 0; i < warehouse_total_products.length; i++) {
+              total += warehouse_total_products[i].quantity;
+              console.log(
+                "warehouse_total_products:",
+                warehouse_total_products[i].quantity
+              );
+            }
+            console.log("Total quantity:", total);
+            // console.log("Total entries:", warehouse_total_products.length);
+            setProductCount(total);
           })
           .catch((err) => {
             console.error(err);
             alert("Error fetching product data");
           });
-          // const updatedWarehouseTotalProducts = warehouse_total_products.map((product) => {
-          //   const warehouseQuantity = warehouse_by_company.find((item) => item.product_id === product.product_id)?.quantity || 0;
-          //   return { ...product, warehouseQuantity };
-          // });
+        // const updatedWarehouseTotalProducts = warehouse_total_products.map((product) => {
+        //   const warehouseQuantity = warehouse_by_company.find((item) => item.product_id === product.product_id)?.quantity || 0;
+        //   return { ...product, warehouseQuantity };
+        // });
 
-        setWarehouseTotal(warehouse_total_products);
-        setcombinedData(warehouse_total_products);
-
-        console.log(typeof response.data);
-        let total = 0;
-
-        for (let i = 0; i < warehouse_total_products.length; i++) {
-          total += warehouse_total_products[i].quantity;
-        }
-        // console.log("Total quantity:", total);
-        // console.log("Total entries:", warehouse_total_products.length);
-        setProductCount(total);
+        // const filteredData = warehouse_total_products.map(
       })
       .catch((err) => {
         console.error(err);
@@ -258,17 +321,21 @@ function POS1({ warehouse_name }) {
     fetchProductCount();
     // fetchProductDetails();
     combinedData.map((totalItem) => {
-      console.log("combinedData", totalItem.title);
+      console.log("combinedData", totalItem);
     });
-  }, []);
+  }, [warehouse_name]);
 
   //   console.log("tttttt ", combinedData)
 
   return (
     <div>
+      {/* <h1>{warehouse_name}</h1> */}
       <Container sx={{ maxHeight: "100px", margin: "20px" }}>
         {combinedData.length > 0 && combinedData[0].city != "N/A" ? (
-          <List_ftn_pos combinedData={combinedData} />
+          <List_ftn_pos
+            combinedData={combinedData}
+            warehouse_name={warehouse_name}
+          />
         ) : (
           ""
         )}

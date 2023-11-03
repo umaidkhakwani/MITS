@@ -23,6 +23,7 @@ import convertToUTC from "../UTC_converter";
 
 import firebase_app from "../../Firebase/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { useSelector } from "react-redux";
 
 const auth = getAuth(firebase_app);
 
@@ -34,8 +35,16 @@ var formattedTime;
 function Create_pos() {
   const [form_validity, set_form_validity] = useState(false);
   const [selectedStores, setSelectedStores] = useState(["other"]);
-  const [page_options, set_page_options] = useState("inventory");
+  const [page_options, set_page_options] = useState(false);
   const [warehouse_options, set_warehouse_options] = useState("inventory");
+
+  const [create_shopify_pos, setcreate_shopify_pos] = useState([
+    {
+      store_name: "",
+      api_key: "",
+      token_pass: "",
+    },
+  ]);
 
   const [create_pos, setcreate_pos] = useState([
     {
@@ -50,10 +59,18 @@ function Create_pos() {
     },
   ]);
 
+  const company2 = useSelector((state) => state.users);
+  console.log("showing company2 in create pos", company2[0]);
+
   var email = "";
 
   const handleStoreChange = (store) => {
     setSelectedStores(store);
+    if (store === "Shopify") {
+      set_page_options(true);
+    } else {
+      set_page_options(false);
+    }
   };
 
   const shopify_store_addProduct = async () => {
@@ -70,6 +87,15 @@ function Create_pos() {
       // WooCommerceFunction();
     }
   };
+
+  const handle_create_shopify_warehouse = (field, value) => {
+    setcreate_shopify_pos((prevItem) => ({
+      ...prevItem,
+      [field]: value,
+    }));
+    console.log("showing created shopify products", create_shopify_pos);
+  };
+
   const handle_create_warehouse = (field, value) => {
     setcreate_pos((prevItem) => ({
       ...prevItem,
@@ -118,32 +144,60 @@ function Create_pos() {
 
       // Get the current user
       const user = auth.currentUser;
-
+      var filteredCompanies;
       if (user) {
         email = user.email;
-        try {
-          await handle_create_warehouse("email", email);
-          console.log("Current user's email:", email);
-        } catch (error) {
-          console.error("Error handling warehouse creation:", error);
-        }
+        filteredCompanies = company2.filter(
+          (company) => company.email === email
+        );
+        console.log("filtered companies", filteredCompanies[0]);
+        // try {
+        //   await handle_create_warehouse("email", email);
+        //   console.log("Current user's email:", email);
+        // } catch (error) {
+        //   console.error("Error handling warehouse creation:", error);
+        // }
       } else {
         console.log("No user is currently signed in.");
       }
       timeSetting();
 
-      const requestData = {
-        product: {
-          email: email,
-          title: create_pos.title,
-          address: create_pos.address,
-          city: create_pos.city,
-          country: create_pos.country,
-          association: selectedStores,
-          date: formattedDate,
-          time: formattedTime,
-        },
-      };
+      console.log("showing selected stores in create pos", selectedStores);
+
+      let requestData = {};
+
+      // if (selectedStores === "Shopify") {
+        requestData = {
+          product: {
+            email: email,
+            store_name: create_shopify_pos.store_name || "",
+            api_key: create_shopify_pos.api_key || "",
+            token_pass: create_shopify_pos.token_pass || "",
+            title: create_pos.title,
+            address: create_pos.address,
+            city: create_pos.city,
+            country: create_pos.country,
+            association: selectedStores,
+            company: filteredCompanies[0].company,
+            date: formattedDate,
+            time: formattedTime,
+          },
+        };
+      // } else {
+      //   requestData = {
+      //     product: {
+      //       email: email,
+      //       title: create_pos.title,
+      //       address: create_pos.address,
+      //       city: create_pos.city,
+      //       country: create_pos.country,
+      //       association: selectedStores,
+      //       company: filteredCompanies[0].company,
+      //       date: formattedDate,
+      //       time: formattedTime,
+      //     },
+      //   };
+      // }
 
       console.log("into handle submit", requestData);
 
@@ -154,6 +208,14 @@ function Create_pos() {
           console.log(typeof response.data);
         })
         .catch((err) => console.error(err));
+
+      setcreate_shopify_pos({
+        store_name: "",
+        api_key: "",
+        token_pass: "",
+      });
+
+      set_page_options(false);
 
       setcreate_pos({
         title: "",
@@ -224,54 +286,152 @@ function Create_pos() {
                   spacing={4}
                   sx={{ justifyContent: "center", alignItems: "center" }}
                 >
-                  <TextField
-                    id="standard-basic-1"
-                    label="Title e.g (Amanah Mall warehouse)"
-                    variant="standard"
-                    value={create_pos.title}
-                    onChange={(e) =>
-                      handle_create_warehouse("title", e.target.value)
-                    }
-                    required
-                    sx={{ width: "100%" }}
-                  />
-                  <TextField
-                    id="standard-basic-1"
-                    label="Address e.g (Model town link road)"
-                    variant="standard"
-                    value={create_pos.address}
-                    onChange={(e) => {
-                      handle_create_warehouse("address", e.target.value);
-                      isFormValid();
-                    }}
-                    required
-                    sx={{ width: "100%" }}
-                  />
-                  <TextField
-                    id="standard-basic-1"
-                    label="City"
-                    variant="standard"
-                    value={create_pos.city}
-                    onChange={(e) => {
-                      handle_create_warehouse("city", e.target.value);
-                      isFormValid();
-                    }}
-                    required
-                    sx={{ width: "100%" }}
-                  />
-                  <TextField
-                    id="standard-basic-1"
-                    label="Country"
-                    variant="standard"
-                    value={create_pos.country}
-                    onChange={(e) => {
-                      handle_create_warehouse("country", e.target.value);
-                      isFormValid();
-                    }}
-                    required
-                    sx={{ width: "100%" }}
-                  />
-
+                  {page_options ? (
+                    <Container
+                      direction="column"
+                      sx={{ justifyContent: "center", alignItems: "center" }}
+                    >
+                      <TextField
+                        id="standard-basic-1"
+                        label="Shopify Store Name"
+                        variant="standard"
+                        value={create_shopify_pos.store_name}
+                        onChange={(e) =>
+                          handle_create_shopify_warehouse(
+                            "store_name",
+                            e.target.value
+                          )
+                        }
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                      <TextField
+                        id="standard-basic-1"
+                        label="Shopify API Key"
+                        variant="standard"
+                        value={create_shopify_pos.api_key}
+                        onChange={(e) =>
+                          handle_create_shopify_warehouse(
+                            "api_key",
+                            e.target.value
+                          )
+                        }
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                      <TextField
+                        id="standard-basic-1"
+                        label="Shopify Token Password"
+                        variant="standard"
+                        value={create_shopify_pos.token_pass}
+                        onChange={(e) =>
+                          handle_create_shopify_warehouse(
+                            "token_pass",
+                            e.target.value
+                          )
+                        }
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                      <TextField
+                        id="standard-basic-1"
+                        label="Title e.g (Amanah Mall warehouse)"
+                        variant="standard"
+                        value={create_pos.title}
+                        onChange={(e) =>
+                          handle_create_warehouse("title", e.target.value)
+                        }
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                      <TextField
+                        id="standard-basic-1"
+                        label="Address e.g (Model town link road)"
+                        variant="standard"
+                        value={create_pos.address}
+                        onChange={(e) => {
+                          handle_create_warehouse("address", e.target.value);
+                          isFormValid();
+                        }}
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                      <TextField
+                        id="standard-basic-1"
+                        label="City"
+                        variant="standard"
+                        value={create_pos.city}
+                        onChange={(e) => {
+                          handle_create_warehouse("city", e.target.value);
+                          isFormValid();
+                        }}
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                      <TextField
+                        id="standard-basic-1"
+                        label="Country"
+                        variant="standard"
+                        value={create_pos.country}
+                        onChange={(e) => {
+                          handle_create_warehouse("country", e.target.value);
+                          isFormValid();
+                        }}
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                    </Container>
+                  ) : (
+                    <div>
+                      <TextField
+                        id="standard-basic-1"
+                        label="Title e.g (Amanah Mall warehouse)"
+                        variant="standard"
+                        value={create_pos.title}
+                        onChange={(e) =>
+                          handle_create_warehouse("title", e.target.value)
+                        }
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                      <TextField
+                        id="standard-basic-1"
+                        label="Address e.g (Model town link road)"
+                        variant="standard"
+                        value={create_pos.address}
+                        onChange={(e) => {
+                          handle_create_warehouse("address", e.target.value);
+                          isFormValid();
+                        }}
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                      <TextField
+                        id="standard-basic-1"
+                        label="City"
+                        variant="standard"
+                        value={create_pos.city}
+                        onChange={(e) => {
+                          handle_create_warehouse("city", e.target.value);
+                          isFormValid();
+                        }}
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                      <TextField
+                        id="standard-basic-1"
+                        label="Country"
+                        variant="standard"
+                        value={create_pos.country}
+                        onChange={(e) => {
+                          handle_create_warehouse("country", e.target.value);
+                          isFormValid();
+                        }}
+                        required
+                        sx={{ width: "100%", margin: "10px 0px" }}
+                      />
+                    </div>
+                  )}
 
                   {form_validity ? (
                     <Button

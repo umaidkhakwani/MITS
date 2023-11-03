@@ -24,6 +24,7 @@ import {
 import List_ftn from "../../containers/List_ftn";
 import List_ftn_all from "../../containers/List_ftn_all";
 import List_ftn_pos from "../../containers/List_ftn_pos";
+import List_ftn_return_pos from "../../containers/List_ftn_return_pos";
   
   
   const auth = getAuth(firebase_app);
@@ -233,7 +234,7 @@ import List_ftn_pos from "../../containers/List_ftn_pos";
       <div>
         <Container sx={{maxHeight:"100px", margin:"20px"}}>
           {combinedData.length > 0 && combinedData[0].city != "N/A" ? (
-            <List_ftn_pos combinedData={combinedData}/>
+            <List_ftn_return_pos combinedData={combinedData}/>
           ) : (
             ""
           )}
