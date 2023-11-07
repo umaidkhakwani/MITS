@@ -98,20 +98,20 @@ function List_ftn_pos(props) {
   const [totalCostPrice, setTotalCostPrice] = useState(0);
 
   const [open, setOpen] = useState(false);
-  
+
   const [inputValue, setInputValue] = useState("");
   const [gstValues, setGstValues] = useState([]);
   const [quantityValues, set_quantityValues] = useState([]);
   const [pdfVisible, setPdfVisible] = useState(false);
   const [selectedStores, setSelectedStores] = useState(["Cash"]);
-  
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
   //---------------------------------------------------------------------------------------------
   const [customer_input, setcustomer_input] = useState([
     {
-      company: "",
+      // company: "",
       email: "",
       name: "",
       customer_email: "",
@@ -120,7 +120,6 @@ function List_ftn_pos(props) {
   ]);
 
   //--------------------------  DIALOG CODE ----------------------------------------------------------
-
 
   const [openDialog, setOpenDialog] = useState(false);
   // const [selectedValue, setSelectedValue] = useState();
@@ -133,7 +132,7 @@ function List_ftn_pos(props) {
     setOpenDialog(false);
     // setSelectedValue(value);
   };
-  
+
   //------------------------------------------------------------------------------------
 
   const company2 = useSelector((state) => state.users);
@@ -143,12 +142,19 @@ function List_ftn_pos(props) {
     current_email = user.email;
   }
 
-  
   // var user_company = "";
   const user_company = company2.find((obj) => obj.email === current_email);
-  console.log("showing user company in list pos 222333", user_company.company);
-  console.log("showing user company in list pos 222333 company 2", company2);
-
+  if (user_company) {
+    console.log(
+      "showing user company in list pos 222333 user_company",
+      user_company
+    );
+    console.log(
+      "showing user company in list pos 222333 user_company 2",
+      user_company.company
+    );
+    console.log("showing user company in list pos 222333 company 2", company2);
+  }
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleSearch = (event) => {
@@ -200,15 +206,16 @@ function List_ftn_pos(props) {
       ...prevItem,
       [field]: value,
     }));
-    console.log("showing created customer_input", customer_input);
+    if (customer_input)
+      console.log("showing created customer_input", customer_input);
   };
 
   const handle_customer_upload = async () => {
     if (customer_input.name != "") {
-    //   let user_company = "";
+      //   let user_company = "";
 
-    //   user_company = company2.find((obj) => obj.email === current_email);
-    //   console.log("showing user company", user_company.company);
+      //   user_company = company2.find((obj) => obj.email === current_email);
+      //   console.log("showing user company", user_company.company);
       try {
         console.log("Current user's email:", current_email);
         // console.log("Current warehouse name:", warehouse_name_value);
@@ -334,7 +341,7 @@ function List_ftn_pos(props) {
     if (!pdfVisible) {
       setcustomer_input([
         {
-          company: "",
+          // company: "",
           email: "",
           name: "",
           customer_email: "",

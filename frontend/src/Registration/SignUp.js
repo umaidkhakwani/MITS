@@ -26,7 +26,6 @@ import "../css/styles.css";
 import firebase_app from "../Firebase/firebase";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
-
 const auth = getAuth(firebase_app);
 var API_LINK = "http://localhost:5000/";
 
@@ -65,7 +64,6 @@ export default function SignUp() {
     password: "",
   });
   const [checkboxChecked, setCheckboxChecked] = useState(false);
-
 
   const handle_create_user = (field, value) => {
     // setInventory(event.target.value);
@@ -276,6 +274,9 @@ export default function SignUp() {
                           handle_create_user("fname", e.target.value)
                         }
                         autoFocus
+                        size="small"
+                        variant="outlined"
+                        sx={{ height: "40px" }}
                       />
                       <TextField
                         className="custom-textfield"
@@ -293,6 +294,9 @@ export default function SignUp() {
                         onChange={(e) =>
                           handle_create_user("lname", e.target.value)
                         }
+                        size="small"
+                        variant="outlined"
+                        sx={{ height: "40px" }}
                       />
                       <TextField
                         className="custom-textfield"
@@ -310,6 +314,9 @@ export default function SignUp() {
                         onChange={(e) =>
                           handle_create_user("company", e.target.value)
                         }
+                        size="small"
+                        variant="outlined"
+                        sx={{ height: "40px" }}
                       />
 
                       <TextField
@@ -328,6 +335,9 @@ export default function SignUp() {
                         onChange={(e) =>
                           handle_create_user("email", e.target.value)
                         }
+                        size="small"
+                        variant="outlined"
+                        sx={{ height: "40px" }}
                       />
 
                       <TextField
@@ -346,6 +356,9 @@ export default function SignUp() {
                         onChange={(e) =>
                           handle_create_user("password", e.target.value)
                         }
+                        size="small"
+                        variant="outlined"
+                        sx={{ height: "40px" }}
                       />
                       <FormControlLabel
                         control={
@@ -462,7 +475,7 @@ export default function SignUp() {
                     </Typography>
 
                     <Typography
-                            variant="h6"
+                      variant="h6"
                       fontWeight="bold"
                       color="whitesmoke"
                       mb={3}
