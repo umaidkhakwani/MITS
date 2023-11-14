@@ -7,6 +7,7 @@ const create_pos_closing = async () => {
         pos_id INT AUTO_INCREMENT PRIMARY KEY,
         id INT,
         description TEXT(3000),
+        gst TEXT(3000),
         company_name VARCHAR(255),
         total_amount DECIMAL(13, 2),
         cost_price DECIMAL(13, 2),
@@ -14,7 +15,7 @@ const create_pos_closing = async () => {
         transaction VARCHAR(255),
         time TIME NOT NULL,
         date DATE NOT NULL,
-        FOREIGN KEY (id) REFERENCES warehouse(id)
+        FOREIGN KEY (id) REFERENCES warehouse(id) 
       );
   `;
   const pool = await connection.getConnection();
@@ -29,6 +30,7 @@ const insert_pos_closing = async (product) => {
   const {
     id,
     description,
+    gst,
     company,
     total_amount,
     cost_price,
@@ -38,12 +40,13 @@ const insert_pos_closing = async (product) => {
     date,
   } = product;
   const sql =
-    "INSERT INTO pos_closing (id, description , company_name, total_amount , cost_price , user_paid , transaction, time, date ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO pos_closing (id, description, gst, company_name, total_amount , cost_price , user_paid , transaction, time, date ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   const pool = await connection.getConnection();
   try {
     await pool.query(sql, [
       id,
       description,
+      gst,
       company,
       total_amount,
       cost_price,

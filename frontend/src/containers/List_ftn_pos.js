@@ -372,7 +372,12 @@ function List_ftn_pos(props) {
       for (let i = 0; i < itemSave.length; i++) {
         description += itemSave[i].barcode + "(" + quantityValues[i] + "),";
       }
+      let gst = "";
+      for (let i = 0; i < itemSave.length; i++) {
+        gst += itemSave[i].barcode + "(" + gstValues[i] + "),";
+      }
       console.log("showing description", description);
+      console.log("showing gst", gst);
 
       //----------------- DATE and TIME--------------------------------------------------
 
@@ -409,6 +414,7 @@ function List_ftn_pos(props) {
         email: current_email,
         title: warehouse_name,
         description: description,
+        gst: gst,
         cost_price: total_retail,
         total_amount: totalSum,
         user_paid: inputValue,
@@ -418,6 +424,14 @@ function List_ftn_pos(props) {
         // items: itemSave,
         // gstValues: gstValues,
         // quantityValues: quantityValues,
+      };
+      const requestData2 = {
+        email:current_email,
+        warehouse:warehouse_name,
+        // company:,
+        // profit:,
+        // state:,
+        // date:,
       };
 
       console.log("in handle_get_warehouse_id", requestData);

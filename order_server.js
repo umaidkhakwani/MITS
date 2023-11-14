@@ -14,6 +14,7 @@ const supplier_model = require("./controller/Suppliers_controller");
 const pos_closing = require("./controller/POS_closing_controller");
 const pos_expenses = require("./controller/Expenses_controller");
 const pos_customers = require("./controller/Customer_controller");
+const status_model = require("./controller/Status_controller");
 const shopify_pos = require("./controller/Shopify_warehouse_controller");
 
 const shopify = require("shopify-api-node");
@@ -234,6 +235,32 @@ app.post("/get_prediction", async (req, res) => {
     });
 });
 
+//----------------------------  Status -------------------------------------------------------------------
+
+status_model.create_status();
+
+app.post("/insert_status", async (req, res) => {
+  const { email, warehouse, profit, state, date } = req.body;
+  const warehouse_details = await warehouse_model.getUserByEmailandWarehouse(
+    email,
+    title
+  );
+  console.log("showing warehouse_details", warehouse_details);
+  const { id, company } = warehouse_details[0][0];
+  console.log(`inside POS CLOSING:: email is : ${id},  title is : ${company}`);
+
+  const status = { email, warehouse, company, profit, state, date };
+  try {
+    await status_model.insert_status(status);
+    res.status(201).json({ message: "Status record inserted successfully" });
+  } catch (error) {
+    console.error("Error in Status record insert:", error);
+    res.status(500).json({ message: "Error in Status record insert" });
+  }
+});
+
+//--------------------------------------------------------------------------------------------------------
+
 //----------------------------  POS CLOSING -------------------------------------------------------------------
 warehouse_model.create_warehouse();
 warehouse_products_details.create_warehouse_product_details();
@@ -245,6 +272,7 @@ app.post("/get_warehouse_id", async (req, res) => {
     email,
     title,
     description,
+    gst,
     cost_price,
     total_amount,
     user_paid,
@@ -266,6 +294,7 @@ app.post("/get_warehouse_id", async (req, res) => {
   const pos_closing_data = {
     id,
     description,
+    gst,
     company,
     total_amount,
     cost_price,
@@ -355,6 +384,8 @@ app.post("/create_pos_expense", async (req, res) => {
     // picture_url,
     // cost_price,
     retail_price,
+    tax_amount,
+    tax_percentage,
     time,
     date,
     // quantity,
@@ -378,6 +409,8 @@ app.post("/create_pos_expense", async (req, res) => {
     // picture_url,
     // cost_price,
     retail_price,
+    tax_amount,
+    tax_percentage,
     time,
     date,
     // quantity,
@@ -542,8 +575,10 @@ app.post("/create_warehouse", async (req, res) => {
 
       if (association === "Shopify") {
         try {
-          const fetch_warehouse_details =
-            await warehouse_model.getUserByEmailandWarehouse(email, title);
+          const fetch_warehouse_details = await warehouse_model.getUserByEmailandWarehouse(
+            email,
+            title
+          );
           let id = fetch_warehouse_details[0][0].id;
           console.log(
             "showing warehouse details",
@@ -732,8 +767,9 @@ app.post("/get_company_products", async (req, res) => {
   }
 
   try {
-    const warehouse_list =
-      await warehouse_products_details.get_details_Oncompany(company);
+    const warehouse_list = await warehouse_products_details.get_details_Oncompany(
+      company
+    );
     console.log("showing company products listttt::", warehouse_list[0]);
 
     // Send the warehouse list in the response
@@ -962,7 +998,7 @@ app.post("/insert_transfer", async (req, res) => {
   // console.log("showing req body in transfer_quantity ", req.body);
 
   // console.log("showing email in warehouse products", email);
-  
+
   let company = "";
   let id = "";
   try {
@@ -993,7 +1029,7 @@ app.post("/insert_transfer", async (req, res) => {
       d_date,
     };
     console.log("showing warehouse_data company in insert_transfer", company);
-  
+
     const response = await transfer_quantity.insert_transfer(transfer_data);
     console.log("showing response for insert_transfer ::", response);
 
@@ -1014,12 +1050,18 @@ app.post("/get_transferDetails_By_company", async (req, res) => {
   try {
     const existingUser = await userModel.getUserByEmail(email);
     company = existingUser[0][0].company;
-    console.log("showing company in get_transferDetails_By_company:: ", company);
+    console.log(
+      "showing company in get_transferDetails_By_company:: ",
+      company
+    );
   } catch (error) {
     console.error("Error in get_transferDetails_By_company:", error);
     res
       .status(500)
-      .json({ message: "Error in get_transferDetails_By_company", error: error.message });
+      .json({
+        message: "Error in get_transferDetails_By_company",
+        error: error.message,
+      });
   }
   try {
     const warehouse_list = await transfer_quantity.getUserByCompany(company);
@@ -1032,18 +1074,21 @@ app.post("/get_transferDetails_By_company", async (req, res) => {
     res.send(warehouse_list[0]);
   } catch (error) {
     console.error("Error getting warehouse list in get transfer:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error getting warehouse list in get transfer",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error getting warehouse list in get transfer",
+      error: error.message,
+    });
   }
 });
 
 app.post("/transfer_quantity", async (req, res) => {
-  const { email, sku, from_warehouse, to_warehouse, quantity } =
-    req.body.transfer[0];
+  const {
+    email,
+    sku,
+    from_warehouse,
+    to_warehouse,
+    quantity,
+  } = req.body.transfer[0];
   console.log(
     `showing req body in transfer_quantity ${email}, ${sku}, ${from_warehouse}, ${to_warehouse}, ${quantity} `
   );

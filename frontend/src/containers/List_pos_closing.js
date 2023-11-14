@@ -148,7 +148,7 @@ function List_pos_closing(props) {
             {combinedData.length > 0 &&
               Object.keys(combinedData[0]).map((key) => (
                 <th key={key} style={{ color: "#593993" }}>
-                  {key == "company_name" ? "company":key}
+                  {key == "company_name" ? "company" : key}
                 </th>
               ))}
           </tr>
@@ -294,6 +294,33 @@ function List_pos_closing(props) {
                         );
                         const title = product ? product.title : barcode;
                         return `${title} (${quantity})`;
+                      } else {
+                        return "";
+                      }
+                    })
+                    .join("<br />");
+
+                  return (
+                    <div key={valueIndex}>
+                      <strong>{key}:</strong>
+                      <div
+                        dangerouslySetInnerHTML={{ __html: updatedDescription }}
+                      />
+                    </div>
+                  );
+                } else if (key === "gst") {
+                  const descriptionValue = selectedRowData[key];
+                  const parts = descriptionValue.split(",");
+                  const updatedDescription = parts
+                    .map((part) => {
+                      if (part != "") {
+                        const [barcode, quantity] = part.split("(");
+                        const product = product_details.find(
+                          (product) => product.barcode === barcode
+                        );
+                        const title = product ? product.title : barcode;
+                        const price = product ? (parseInt(quantity) * ((parseFloat(product.retail_price) * parseInt(quantity) )/100)) : "0";
+                        return `${title} (${quantity}) - ${price.toFixed(2).toString()}`;
                       } else {
                         return "";
                       }

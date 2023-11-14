@@ -49,6 +49,8 @@ function Create_Expense(props) {
       // picture_url: "",
       // cost_price: "",
       retail_price: "",
+      tax_amount:"",
+      tax_percentage:"",
       // quantity: "",
       // SKU: "",
       // barcode: "",
@@ -263,6 +265,7 @@ function Create_Expense(props) {
       InventoryProducts[0].email = email;
       InventoryProducts[0].warehouse = warehouse_name_value;
       InventoryProducts[0].company = user_company.company;
+      InventoryProducts[0].tax_percentage = (parseInt(InventoryProducts[0].tax_amount) * 100) / parseInt(InventoryProducts[0].retail_price);
 
       // InventoryProducts[0].barcode = 1234;
 
@@ -329,6 +332,8 @@ function Create_Expense(props) {
           // picture_url: "",
           // cost_price: "",
           retail_price: "",
+          tax_amount:"",
+          //tax_percentage:"",
           // quantity: "",
           // SKU: "",
           // barcode: "",
@@ -348,6 +353,8 @@ function Create_Expense(props) {
       // "picture_url",
       // "cost_price",
       "retail_price",
+      "tax_amount",
+   //   "tax_percentage",
       // "quantity",
       // "SKU",
       // "barcode",
@@ -394,6 +401,8 @@ function Create_Expense(props) {
         //   picture_url: "",
         //   cost_price: "",
         retail_price: "",
+        tax_amount:"",
+        //tax_percentage:"",
         //   quantity: "",
         //   SKU: "",
         //   barcode: "",

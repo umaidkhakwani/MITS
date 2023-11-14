@@ -117,6 +117,10 @@ function Analytics(props) {
   //   }
   // };
 
+  const handle_stats = async() => {
+    
+  }
+
   const handle_total_sales = async () => {
     // setresponseData_analytics("");
 
@@ -178,6 +182,7 @@ function Analytics(props) {
                   orderDetails = shops_combined;
 
                   let sales_data = calculatePerDaySales();
+                  console.log("sales_data", sales_data);
                   let finalResult = await handle_pos_data(sales_data);
                   handle_top_products(shops_combined, finalResult);
 
@@ -286,7 +291,8 @@ function Analytics(props) {
     } catch (error) {
       console.log("error in handle pos data", error);
     }
-    if (user) {
+    console.log("user 6666", user);
+    if (user.uid) {
       email = user.email;
       const requestData2 = {
         email: email,
@@ -316,6 +322,8 @@ function Analytics(props) {
 
       // Initialize the resulting array
       const all_product_result = [];
+      console.log("val1 6666", val1);
+      console.log("val2 6666", val2);
 
       val1.forEach((item1) => {
         const created_at = item1.date.split("T")[0]; // Extract the date part
@@ -428,6 +436,7 @@ function Analytics(props) {
 
         result.push({ title, data, total });
       });
+      console.log("result 6666", result);
 
       if (salesData) {
         console.log(
@@ -452,6 +461,7 @@ function Analytics(props) {
       // console.log("showing combined data in analytics 2 ", total_sales_pos);
       console.log("showing combined data in analytics after ", perDaySales_new);
       setPerDaySales(perDaySales_new);
+
 
       return finalResult;
       // console.log(
@@ -505,6 +515,7 @@ function Analytics(props) {
     }
     //   console.log("showing producst_details ",productDetails["Airpods"].created_at[0])
     console.log("showing productDetails ", productDetails);
+    console.log("showing finalResult ", finalResult);
     sort_product_details(productDetails, finalResult);
   }
 
@@ -539,7 +550,7 @@ function Analytics(props) {
 
     console.log("showing pos_allProducts ", pos_allProducts);
     console.log("showing pos_allProducts finalResult ", finalResult);
-    if (finalResult.length > 0) {
+    if (finalResult && Array.isArray(finalResult) && finalResult.length > 0) {
       var new_order_analytics = [...productDetailsArray, ...finalResult];
       new_order_analytics.sort((a, b) => b.quantity - a.quantity);
 
