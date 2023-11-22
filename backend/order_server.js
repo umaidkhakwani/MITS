@@ -27,13 +27,13 @@ const {
   cancelOrder,
 } = require("./controller/Orders_controller");
 
-const {
-  createProd,
-  getProd,
-  updateProd,
-  deleteProd,
-} = require("./controller/Products_controller");
-const { default: Warehouse } = require("./frontend/src/components/Warehouse");
+// const {
+//   createProd,
+//   getProd,
+//   updateProd,
+//   deleteProd,
+// } = require("./controller/Products_controller");
+// const { default: Warehouse } = require("./frontend/src/components/Warehouse");
 
 const app = express();
 app.use(cors());
