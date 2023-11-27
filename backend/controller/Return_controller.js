@@ -1,17 +1,20 @@
 const connection = require("../Database/db");
 
 // Create User Table
-const create_expenses = async () => {
+const create_return = async () => {
   const sql = `
-    CREATE TABLE IF NOT EXISTS expenses (
-      ex_id INT AUTO_INCREMENT PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS return_items (
+      r_id INT AUTO_INCREMENT PRIMARY KEY,
       email VARCHAR(255) NOT NULL,
+      SKU VARCHAR(255),
+      barcode VARCHAR(255),
       title VARCHAR(255) NOT NULL,
       warehouse VARCHAR(255) NOT NULL,
       company VARCHAR(255) NOT NULL,
-      retail VARCHAR(255) NOT NULL,
-      tax_amount INT NOT NULL,
-      tax_percentage INT NOT NULL,
+      retail_price VARCHAR(255) NOT NULL,
+      quantity INT NOT NULL,
+      discount_per INT NOT NULL,
+      tax_per INT NOT NULL,
       date DATE NOT NULL,
       time TIME NOT NULL,
       FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
@@ -26,30 +29,36 @@ const create_expenses = async () => {
 };
 
 // Insert a New User
-const insert_expense = async (expense) => {
+const insert_return = async (return_items) => {
   const {
     email,
+    SKU,
+    barcode,
+    title,
     warehouse,
     company,
-    title,
     retail_price,
-    new_tax_amount,
-    tax_percentage,
-    time,
+    quantity,
+    discount_per,
+    tax_per,
     date,
-  } = expense;
+    time,
+  } = return_items;
   const sql =
-    "INSERT INTO expenses (email, title, warehouse, company, retail, tax_amount, tax_percentage, date, time ) VALUES (?, ?, ? , ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO return_items ( email, SKU, barcode, title, warehouse, company, retail_price, quantity, discount_per, tax_per, date, time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   const pool = await connection.getConnection();
   try {
     await pool.query(sql, [
       email,
+      SKU,
+      barcode,
       title,
       warehouse,
       company,
       retail_price,
-      new_tax_amount,
-      tax_percentage,
+      quantity,
+      discount_per,
+      tax_per,
       date,
       time,
     ]);
@@ -60,7 +69,7 @@ const insert_expense = async (expense) => {
 
 // Fetch User by Email
 const getUserByEmail = async (email) => {
-  const sql = "SELECT * FROM expenses WHERE email = ?";
+  const sql = "SELECT * FROM return_items WHERE email = ?";
   const pool = await connection.getConnection();
   try {
     return await pool.query(sql, [email]);
@@ -70,7 +79,7 @@ const getUserByEmail = async (email) => {
 };
 
 const getUserByCompany = async (company) => {
-  const sql = "SELECT * FROM expenses WHERE company = ?";
+  const sql = "SELECT * FROM return_items WHERE company = ?";
   const pool = await connection.getConnection();
   try {
     return await pool.query(sql, [company]);
@@ -80,7 +89,7 @@ const getUserByCompany = async (company) => {
 };
 
 const getUserByEmailandWarehouse = async (email, warehouse) => {
-  const sql = "SELECT * FROM expenses WHERE email = ? AND warehouse = ?";
+  const sql = "SELECT * FROM return_items WHERE email = ? AND warehouse = ?";
   const pool = await connection.getConnection();
   try {
     return await pool.query(sql, [email, warehouse]);
@@ -89,10 +98,23 @@ const getUserByEmailandWarehouse = async (email, warehouse) => {
   }
 };
 
+const import_return_items = async (query) => {
+    // const sql = "SELECT * FROM product_list WHERE company = ?";
+    const pool = await connection.getConnection();
+    try {
+      return await pool.query(query);
+    } finally {
+      pool.release(); // Release the connection back to the pool
+    }
+  };
+
+
+
 module.exports = {
-  create_expenses,
-  insert_expense,
+  create_return,
+  insert_return,
   getUserByEmail,
   getUserByCompany,
   getUserByEmailandWarehouse,
+  import_return_items,
 };

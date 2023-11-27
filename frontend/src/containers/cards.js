@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Avatar,
   Badge,
@@ -13,6 +13,18 @@ import {
 import { red, green } from "@mui/material/colors";
 import green_arrow from "../images/increase_arrow.png";
 import red_arrow from "../images/decrease_arrow.png";
+import axios from "axios";
+import firebase_app from "../Firebase/firebase";
+import {
+  getAuth,
+  onAuthStateChanged,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+
+const auth = getAuth(firebase_app);
+
+var API_LINK = "http://localhost:5000/";
 
 const cards = [
   {
@@ -26,25 +38,84 @@ const cards = [
     value: 60,
     icon: "💵", // Replace with your desired icon
     stock: "100k",
-
   },
   {
     title: "Total Orders",
-    value: 45,
+    value: 65,
     icon: "🛒", // Replace with your desired icon
     stock: "837",
-
   },
   {
     title: "Product Stock",
     value: 80,
     icon: "📦", // Replace with your desired icon
     stock: "8.2K",
-
   },
 ];
 
 function Dashboard_Cards() {
+  const [net_stat, set_net_stat] = useState(0); // State to track loading
+
+  const user = auth.currentUser;
+  var email = "";
+
+  const handle_net_profit = async () => {
+    let stats = [];
+    if (user) {
+      email = user.email;
+      const requestData = {
+        email: email,
+      };
+
+      let totalDiscount = 0;
+      let totalCostPrice = 0;
+      let totalRetail = 0;
+      let totalExpenses = 0;
+
+      try {
+        try {
+          const response_expense = await axios.post(
+            API_LINK + "get_expenses_by_email",
+            requestData
+          );
+          console.log("status in Cards", response_expense.data);
+          totalExpenses = response_expense.data.reduce((result, entry) => {
+            console.log("entry in Cards", entry.retail);
+
+            return result + parseInt(entry.retail);
+          }, 0);
+        } catch (err) {
+          console.error(err);
+        }
+
+        const response = await axios.post(API_LINK + "get_status", requestData);
+        console.log("status in Cards", response.data);
+        stats = response.data.reduce((result, entry) => {
+          totalDiscount += parseInt(entry.totalDiscount);
+          totalCostPrice += parseInt(entry.totalCostPrice);
+          totalRetail += parseInt(entry.totalRetail);
+          return result;
+        }, {});
+        console.log(
+          "total in card :: ",
+          totalDiscount,
+          totalCostPrice,
+          totalRetail,
+          totalExpenses
+        );
+        set_net_stat(
+          totalRetail - totalCostPrice - totalDiscount - totalExpenses
+        );
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    handle_net_profit();
+  }, []);
+
   return (
     <Grid container spacing={2}>
       {cards.map((card, index) => (
@@ -55,14 +126,24 @@ function Dashboard_Cards() {
               width: "260px",
               margin: "0.9rem 20px",
               borderRadius: "16px",
+              boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
+              background:
+                card.title === "Net Profit"
+                  ? net_stat > 0
+                    ? "linear-gradient(45deg, #335e00,#84f105)"
+                    : `linear-gradient(45deg, #b80000, #fa8687)`
+                  : card.value > 50
+                  ? "linear-gradient(45deg, #335e00,#84f105)"
+                  : "linear-gradient(45deg, #335e00,#84f105)"
             }}
           >
             <CardHeader
               margin="0px"
-              avatar={<Avatar>{card.icon}</Avatar>}
+              avatar={<Avatar style={{ backgroundColor: 'transparent' }}>{card.icon}</Avatar>}
               title={
                 <div
                   style={{
+                    color:"#c7c7c7",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
@@ -81,20 +162,32 @@ function Dashboard_Cards() {
                       {card.title}
                     </Typography>
                     <Typography variant="h5" style={{ fontWeight: "bold" }}>
-                    {card.stock}
+                      {card.title === "Net Profit" ? net_stat : card.stock}
                     </Typography>
                   </div>
 
                   <Typography
                     variant="h6"
-                    style={{
-                      color: card.value > 50 ? green[500] : red[500],
-                      marginLeft: "0.5rem",
-                    }}
+                    sx={{ backgroundColor: 'transparent',}}
+
+                    // style={{
+                    //   color: card.value > 50 ? green[500] : red[500],
+                    //   marginLeft: "0.5rem",
+                    // }}
                   >
-                    {card.value}%
+                    {/* {card.value}% */}
                     <img
-                      src={card.value > 50 ? green_arrow : red_arrow}
+                      // src={card.value > 50 ? green_arrow : red_arrow}
+                      // alt={card.value > 50 ? "Increase" : "Decrease"}
+                      src={
+                        card.title === "Net Profit"
+                          ? net_stat > 0
+                            ? green_arrow
+                            : red_arrow
+                          : card.value > 50
+                          ? green_arrow
+                          : red_arrow
+                      }
                       alt={card.value > 50 ? "Increase" : "Decrease"}
                       style={{
                         width: "1rem",

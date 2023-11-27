@@ -8,8 +8,10 @@ const create_status = async () => {
       email VARCHAR(255) NOT NULL,
       warehouse VARCHAR(255) NOT NULL,
       company VARCHAR(255) NOT NULL,
-      profit INT NOT NULL,
-      state VARCHAR(2) NOT NULL,
+      totalCostPrice INT NOT NULL,
+      totalDiscount INT NOT NULL,
+      totalRetail INT NOT NULL,
+      time TIME NOT NULL,
       date DATE NOT NULL,
       FOREIGN KEY (email) REFERENCES users(email) ON DELETE CASCADE
     )
@@ -24,12 +26,12 @@ const create_status = async () => {
 
 // Insert a New User
 const insert_status = async (status) => {
-  const { email, warehouse, company, profit, state, date } = status;
+  const { email, warehouse, company, totalCostPrice, totalDiscount, totalRetail, time, date } = status;
   const sql =
-    "INSERT INTO status ( email, warehouse, company, profit, state, date ) VALUES (?, ?, ?, ?, ?, ?)";
+    "INSERT INTO status ( email, warehouse, company, totalCostPrice, totalDiscount, totalRetail, time, date ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
   const pool = await connection.getConnection();
   try {
-    await pool.query(sql, [email, warehouse, company, profit, state, date]);
+    await pool.query(sql, [email, warehouse, company, totalCostPrice, totalDiscount, totalRetail, time, date]);
   } finally {
     pool.release(); // Release the connection back to the pool
   }

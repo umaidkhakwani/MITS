@@ -123,6 +123,20 @@ const getUserByEmailandWarehouse = async (email, warehouse) => {
   }
 };
 
+const add_inventory = async (email, warehouse, sku, quantity) => {
+  const sql = `
+    UPDATE warehouse_product
+    SET quantity = quantity + ?
+    WHERE email = ? AND warehouse = ? AND SKU = ?
+  `;
+  const pool = await connection.getConnection();
+  try {
+    await pool.query(sql, [quantity, email, warehouse, sku]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
 const change_inventory = async (email, warehouse, sku, quantity) => {
   const sql = `
     UPDATE warehouse_product
@@ -137,7 +151,7 @@ const change_inventory = async (email, warehouse, sku, quantity) => {
   }
 };
 
-const import_warehuse_products = async (query) => {
+const import_warehouse_products = async (query) => {
   // const sql = "SELECT * FROM product_list WHERE company = ?";
   const pool = await connection.getConnection();
   try {
@@ -151,8 +165,9 @@ module.exports = {
   create_warehouse_product,
   insert_warehouse_product,
   getUserByEmailandWarehouse,
-  import_warehuse_products,
+  import_warehouse_products,
   getUserByEmail,
   getUserByCompany,
+  add_inventory,
   change_inventory,
 };

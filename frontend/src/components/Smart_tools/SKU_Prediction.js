@@ -61,7 +61,6 @@ function SKU_prediction() {
     console.log("iam in get_total_sales ");
   }
 
- 
   async function handle_pos_sale() {
     if (user) {
       email = user.email;
@@ -94,11 +93,11 @@ function SKU_prediction() {
 
             // Create an array of objects for each part
             const skuObjects = descriptionParts.map((part) => {
-            //   console.log("part", part);
+              //   console.log("part", part);
 
               const [sku, quantity] = part.split("(");
-            //   console.log("sku", sku);
-            //   console.log("quantity", quantity);
+              //   console.log("sku", sku);
+              //   console.log("quantity", quantity);
 
               return {
                 sku: sku.trim(),
@@ -205,9 +204,8 @@ function SKU_prediction() {
         });
 
         // console.log("showing resultDataArray", resultDataArray);
-        handle_total_sales(resultDataArray)
+        handle_total_sales(resultDataArray);
         // setresult_array(resultDataArray);
-
       } catch (error) {
         console.log("error in handle_pos_sale");
         console.error("Error fetching data:", error);
@@ -217,20 +215,20 @@ function SKU_prediction() {
 
   async function handle_total_sales(resultDataArray) {
     try {
-      const response = await axios.get(API_LINK + "get_analytics/total_orders");
-    //   console.log("data sent from backend :: ", response.data.orders);
+      const response = await axios.post(API_LINK + "get_analytics/total_orders");
+      //   console.log("data sent from backend :: ", response.data.orders);
       console.log(typeof response.data);
       setresponseData_analytics(response.data.orders);
 
       calculate_sales(response.data.orders);
       handle_total_orders_count();
-    //   console.log("showing handle total sales ", responseData_analytics);
+      //   console.log("showing handle total sales ", responseData_analytics);
       handle_top_products(response.data.orders);
       orderDetails = response.data.orders;
-    //   console.log(
-    //     "showing orderDetails ",
-    //     orderDetails[0].fulfillments.fulfillments
-    //   );
+      //   console.log(
+      //     "showing orderDetails ",
+      //     orderDetails[0].fulfillments.fulfillments
+      //   );
 
       const salesData = [];
       let lowestDate = null;
@@ -279,9 +277,9 @@ function SKU_prediction() {
         }
       });
 
-    //   console.log("Array of sales data with quantities aggregated:", salesData);
-    //   console.log("lowest date:", lowestDate);
-    //   console.log("new_currentDate:", new_currentDate);
+      //   console.log("Array of sales data with quantities aggregated:", salesData);
+      //   console.log("lowest date:", lowestDate);
+      //   console.log("new_currentDate:", new_currentDate);
 
       const skuData = {};
 
@@ -313,8 +311,8 @@ function SKU_prediction() {
         return { sku, data };
       });
 
-    //   console.log("result", result);
-    //   console.log("resultDataArray in total sales in SKU_prediction", resultDataArray);
+      //   console.log("result", result);
+      //   console.log("resultDataArray in total sales in SKU_prediction", resultDataArray);
 
       const mergedArray = [...result, ...resultDataArray].reduce((acc, obj) => {
         const existingObj = acc.find((item) => item.sku === obj.sku);
@@ -325,8 +323,8 @@ function SKU_prediction() {
         }
         return acc;
       }, []);
-      
-    //   console.log("showing merged_array",mergedArray);
+
+      //   console.log("showing merged_array",mergedArray);
       setresult_array(mergedArray);
       // console.log("skuData",result[0].sku);
       // sorting_function(); // Move this line to after setting the state

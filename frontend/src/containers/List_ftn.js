@@ -229,7 +229,7 @@ function List_ftn(props) {
     <div>
       {changeList ? (
         <div>
-          <h2>New Data</h2>
+          {/* <h2>New Data</h2> */}
           <button
           onClick={handleback}
             style={{
@@ -325,7 +325,7 @@ function List_ftn(props) {
         </div>
       ) : (
         <div>
-          <h2>Combined Data</h2>
+          {/* <h2>Combined Data</h2> */}
           <div>
             {edit_fields ? (
               <Update_warehouse_info

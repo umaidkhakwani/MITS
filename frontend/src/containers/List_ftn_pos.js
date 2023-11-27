@@ -34,6 +34,8 @@ import { useSelector } from "react-redux";
 import InvoicePDF from "../components/POS/containers/InvoicePDF";
 import convertToUTC from "../components/UTC_converter";
 import Return_POS_modal from "../components/POS/containers/Return_POS_modal";
+import Return_pos from "../components/POS/Return_POS";
+import Return_dummy from "../components/POS/Return_dummy";
 
 const auth = getAuth(firebase_app);
 
@@ -98,14 +100,21 @@ function List_ftn_pos(props) {
   const [totalCostPrice, setTotalCostPrice] = useState(0);
 
   const [open, setOpen] = useState(false);
+  const [open_return, setOpen_return] = useState(false);
 
   const [inputValue, setInputValue] = useState("");
   const [gstValues, setGstValues] = useState([]);
+  const [discount_Values, set_discount_Values] = useState([]);
   const [quantityValues, set_quantityValues] = useState([]);
   const [pdfVisible, setPdfVisible] = useState(false);
   const [selectedStores, setSelectedStores] = useState(["Cash"]);
 
   const handleOpen = () => setOpen(true);
+  const handle_return = () => {
+      console.log( "showing open_return", open_return);
+    setOpen_return(true);
+  }
+  const handle_return_close = () => setOpen_return(false);
   const handleClose = () => setOpen(false);
 
   //---------------------------------------------------------------------------------------------
@@ -141,10 +150,11 @@ function List_ftn_pos(props) {
   if (user) {
     current_email = user.email;
   }
-
+  var company_data = "";
   // var user_company = "";
   const user_company = company2.find((obj) => obj.email === current_email);
   if (user_company) {
+    company_data = user_company.company;
     console.log(
       "showing user company in list pos 222333 user_company",
       user_company
@@ -233,16 +243,17 @@ function List_ftn_pos(props) {
       console.log(
         `showing origional ${utcTimestamp}, formatted date and time ${formattedDate}, ${formattedTime}`
       );
-
+      // if (user_company && user_company.length > 0){
       const requestData = {
         name: customer_input.name || "",
         email: current_email,
         cus_email: customer_input.customer_email || "",
-        company: user_company.company,
+        company: company_data,
         phone: customer_input.phone_number || "",
         date: formattedDate,
         time: formattedTime,
       };
+      console.log("showing requestData in pos list ftn: customer", requestData);
       await axios
         .post(API_LINK + "create_pos_customers", requestData)
         .then((response) => {
@@ -254,6 +265,7 @@ function List_ftn_pos(props) {
         .catch((err) => {
           console.error(err);
         });
+      // }
     }
     // console.log("safsa", company2[0].company);
     // InventoryProducts[0].email = email;
@@ -351,16 +363,19 @@ function List_ftn_pos(props) {
       setitemSave([]);
       setTotalCostPrice(0);
       setSelectedRows([]);
-      setitemSave([]);
       setInputValue("");
       setGstValues([]);
+      set_discount_Values([]);
       set_quantityValues([]);
     }
   }, [warehouse_name, pdfVisible]);
 
   const handle_get_warehouse_id = async () => {
+    console.log("sjjsjsj");
     if (user) {
       current_email = user.email;
+    console.log("sjjsjsj2");
+
 
       // items = { itemSave };
       // total_retail = { total_retail };
@@ -369,12 +384,18 @@ function List_ftn_pos(props) {
       // totalSum = { totalSum };
       // inputValue = { inputValue };
       let description = "";
+      let gst = "";
+      let discount_text = "";
+
       for (let i = 0; i < itemSave.length; i++) {
         description += itemSave[i].barcode + "(" + quantityValues[i] + "),";
       }
-      let gst = "";
       for (let i = 0; i < itemSave.length; i++) {
         gst += itemSave[i].barcode + "(" + gstValues[i] + "),";
+      }
+
+      for (let i = 0; i < itemSave.length; i++) {
+        discount_text += itemSave[i].barcode + "(" + discount_Values[i] + "),";
       }
       console.log("showing description", description);
       console.log("showing gst", gst);
@@ -415,9 +436,11 @@ function List_ftn_pos(props) {
         title: warehouse_name,
         description: description,
         gst: gst,
+        discount: discount_text,
         cost_price: total_retail,
         total_amount: totalSum,
         user_paid: inputValue,
+        discount_price: total_discount,
         transaction: selectedStores,
         time: formattedTime,
         date: formattedDate,
@@ -425,14 +448,18 @@ function List_ftn_pos(props) {
         // gstValues: gstValues,
         // quantityValues: quantityValues,
       };
+
       const requestData2 = {
-        email:current_email,
-        warehouse:warehouse_name,
-        // company:,
-        // profit:,
-        // state:,
-        // date:,
+        email: current_email,
+        warehouse: warehouse_name,
+        totalCostPrice: total_cost_price,
+        totalDiscount: total_discount,
+        totalRetail: total_retail,
+        time: formattedTime,
+        date: formattedDate,
       };
+
+      // email, warehouse, totalCostPrice, totalDiscount, totalRetail, time, date
 
       console.log("in handle_get_warehouse_id", requestData);
 
@@ -441,6 +468,12 @@ function List_ftn_pos(props) {
         .then((response) => {
           console.log("Successfully inserted POS Closing ");
 
+          axios
+            .post(API_LINK + "insert_status", requestData2)
+            .then((response2) => {
+              console.log("Successfully inserted status ");
+            })
+            .catch((err) => console.error(err));
           // axios
           // .post(API_LINK + "get_warehouse_id", requestData)
           // .then((response) => {
@@ -492,10 +525,11 @@ function List_ftn_pos(props) {
           //   "showing first filteredCompanies",
           //   filteredCompanies[0].company
           // );
-
+          console.log("showing 23233 first user_company", company_data);
+          // if (user_company && user_company.length > 0){
           const requestData = {
             // company: filteredCompanies[0].company,
-            company: user_company.company,
+            company: company_data,
             warehouse_name: warehouse_name,
             SKU: itemSave[i].SKU,
             quantity: quantityValues[i],
@@ -522,6 +556,7 @@ function List_ftn_pos(props) {
             })
             .catch((err) => console.error(err));
         }
+        // }
       }
     };
 
@@ -610,6 +645,16 @@ function List_ftn_pos(props) {
     setGstValues(newGstValues);
   };
 
+  const updateDiscountValue = (index, value) => {
+    console.log("discount value", value);
+    console.log("discount index", index);
+    const newDiscountValues = [...discount_Values];
+    newDiscountValues[index] = value;
+    console.log(" newDiscountValues", newDiscountValues);
+
+    set_discount_Values(newDiscountValues);
+  };
+
   const update_quantityValue = (index, value) => {
     console.log("quantity value", value);
     console.log("quantity index", index);
@@ -629,6 +674,7 @@ function List_ftn_pos(props) {
       barcode: item.barcode || "",
       title: item.title || "",
       retail_price: item.retail_price || "",
+      cost_price: item.cost_price || "",
       // quantity: 1, // Initialize quantity as 0, you can change it based on user input
     };
     console.log("item.retail_price", item.retail_price);
@@ -793,6 +839,7 @@ function List_ftn_pos(props) {
   useEffect(() => {
     const initialGstValues = itemSave.map(() => ""); // Initialize with empty strings
     setGstValues(initialGstValues);
+    set_discount_Values(initialGstValues);
   }, [itemSave]);
 
   useEffect(() => {
@@ -805,9 +852,11 @@ function List_ftn_pos(props) {
     .map((item, index) => {
       // console.log("item", item);
       const gstValue = parseFloat(gstValues[index]) || 0;
+      const discount_Value = parseFloat(discount_Values[index]) || 0;
       const quantityValue = parseFloat(quantityValues[index]) || 0;
       const retailPrice = parseFloat(item.retail_price) || 0;
-      return quantityValue * (retailPrice + retailPrice * (gstValue / 100));
+      // return quantityValue * ((retailPrice + retailPrice * (gstValue / 100)) - retailPrice * (discount_Value / 100)); // Discounted totalSum
+      return quantityValue * (retailPrice + retailPrice * (gstValue / 100)); // without Discount, totalSum
     })
     .reduce((acc, value) => acc + value, 0);
 
@@ -823,6 +872,31 @@ function List_ftn_pos(props) {
       return retail * quantityValue;
     })
     .reduce((acc, value) => acc + value, 0);
+
+  const total_discount = itemSave
+    .filter(filterRows)
+    .map((item, index) => {
+      const retail = parseFloat(item.retail_price) || 0;
+      const discount_Value = parseFloat(discount_Values[index]) || 0;
+      const gstValue = parseFloat(gstValues[index]) || 0;
+      const retailPrice = parseFloat(item.retail_price) || 0;
+
+      const quantityValue = parseFloat(quantityValues[index]) || 0;
+      return parseInt(quantityValue * (retailPrice * (discount_Value / 100)));
+    })
+    .reduce((acc, value) => acc + value, 0);
+
+  const total_cost_price = itemSave
+    .filter(filterRows)
+    .map((item, index) => {
+      console.log("item in total_cost_price", item);
+      const costPrice = parseFloat(item.cost_price) || 0;
+      const quantityValue = parseFloat(quantityValues[index]) || 0;
+      return quantityValue * costPrice;
+    })
+    .reduce((acc, value) => acc + value, 0);
+
+  const total_paid = totalSum - total_discount;
 
   return (
     <div>
@@ -1031,6 +1105,17 @@ function List_ftn_pos(props) {
                       // borderRadius: "10px 0px",
                     }}
                   >
+                    discount
+                  </th>
+                  <th
+                    style={{
+                      color: "#fff",
+                      height: "40px",
+                      backgroundColor: "#593993",
+                      marginTop: "5px",
+                      // borderRadius: "10px 0px",
+                    }}
+                  >
                     Quantity
                   </th>
                   <th
@@ -1103,6 +1188,23 @@ function List_ftn_pos(props) {
                       value={gstValues[index]}
                       onChange={(e) => updateGstValue(index, e.target.value)}
                       placeholder="GST"
+                      style={{ width: "80px" }}
+                    />
+                  </td>
+                  <td
+                    style={{
+                      textAlign: "center",
+                      padding: "10px",
+                      width: "100px",
+                    }}
+                  >
+                    <input
+                      type="text"
+                      value={discount_Values[index]}
+                      onChange={(e) =>
+                        updateDiscountValue(index, e.target.value)
+                      }
+                      placeholder="discount"
                       style={{ width: "80px" }}
                     />
                   </td>
@@ -1195,6 +1297,39 @@ function List_ftn_pos(props) {
             {totalSum}
           </Typography>
         </Box>
+        <Box
+          sx={{
+            flex: 1, // Use flex to distribute space evenly between columns
+            display: "flex",
+            flexDirection: "column", // Display the content in columns
+            alignItems: "center", // Center content horizontally
+            marginLeft: "10px", // Add margin to create space between columns
+          }}
+        >
+          <Typography sx={{ color: "#fff", textAlign: "center" }}>
+            Total Discount
+          </Typography>
+          <Typography sx={{ color: "#fff", textAlign: "center" }}>
+            {/* {totalCostPrice} */}
+            {total_discount}
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            flex: 1, // Use flex to distribute space evenly between columns
+            display: "flex",
+            flexDirection: "column", // Display the content in columns
+            alignItems: "center", // Center content horizontally
+            marginLeft: "10px", // Add margin to create space between columns
+          }}
+        >
+          <Typography sx={{ color: "#fff", textAlign: "center" }}>
+            Total Payable
+          </Typography>
+          <Typography sx={{ color: "#fff", textAlign: "center" }}>
+            {total_paid}
+          </Typography>
+        </Box>
       </Container>
       <Box
         sx={{ display: "flex", justifyContent: "center", marginTop: "10px" }}
@@ -1224,6 +1359,17 @@ function List_ftn_pos(props) {
         >
           Checkout
         </Button>
+        <Button
+          variant="outlined"
+          onClick={handle_return}
+          sx={{
+            color: "#593993",
+            borderColor: "#593993",
+            marginBottom: "30px",
+          }}
+        >
+          Return
+        </Button>
         <div style={{ marginLeft: "10px" }}>
           <FormControl>
             {/* <FormLabel id="demo-row-radio-buttons-group-label">
@@ -1249,6 +1395,8 @@ function List_ftn_pos(props) {
             </RadioGroup>
           </FormControl>
         </div>
+        
+        {open_return ? <Return_dummy callback={handle_return_close} modal_open={true} combinedData={combinedData} warehouse_name={warehouse_name} /> : null}
 
         <Modal
           open={open}
@@ -1266,14 +1414,14 @@ function List_ftn_pos(props) {
                 textAlign: "center", // Center alignment
               }}
             >
-              Total Amount: {totalSum}
+              Total Amount: {total_paid}
             </Typography>
 
             <TextField
               label="Total Cost Price"
               variant="outlined"
               fullWidth
-              value={`${totalSum - inputValue}`}
+              value={`${total_paid - inputValue}`}
               disabled
               sx={{ mt: 2 }}
             />
@@ -1398,10 +1546,13 @@ function List_ftn_pos(props) {
                     <InvoicePDF
                       items={itemSave}
                       total_retail={total_retail}
+                      discount_Values={discount_Values}
                       gstValues={gstValues}
                       quantityValues={quantityValues}
                       totalSum={totalSum}
                       inputValue={inputValue}
+                      total_discount={total_discount}
+                      total_paid={total_paid}
                     />
                   </Box>
                 </Modal>

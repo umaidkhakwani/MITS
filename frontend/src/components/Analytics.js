@@ -26,6 +26,8 @@ import Product_stat from "../Charts/Product_stat";
 
 import MITS_gif from "../images/MITS_Logo.gif";
 import { useSelector } from "react-redux";
+import Gross_stats from "../Charts/Gross_stats";
+import Return_stat from "../Charts/Return_stat";
 
 const auth = getAuth(firebase_app);
 
@@ -44,6 +46,8 @@ function Analytics(props) {
   const [perDaySales, setPerDaySales] = useState({});
   const [loading, setLoading] = useState(true); // State to track loading
   const [refresh, set_refresh] = useState(false); // State to track loading
+  const [gross_stat, set_gross_stat] = useState([]); // State to track loading
+  const [all_returns, set_all_returns] = useState([]); // State to track loading
 
   var productDetails = {};
   var orderDetails = {};
@@ -54,6 +58,10 @@ function Analytics(props) {
 
   const user = auth.currentUser;
   var email = "";
+  if (user) {
+    email = user.email;
+  }
+
   const company2 = useSelector((state) => state.users);
 
   console.log("showing company2 in analytics", company2[0]);
@@ -74,6 +82,108 @@ function Analytics(props) {
 
   //   });
   //   console.log("showing quantity by title ",quantitiesByTitle)
+
+  const handle_returns = async () => {
+    const requestData = {
+      email: email,
+    };
+    try {
+      const response = await axios.post(
+        API_LINK + "get_return_data",
+        requestData
+      );
+      console.log("Successfully fetchd all returns ", response.data);
+      // set_all_returns(response.data);
+
+      const transformedData = [];
+
+      response.data.forEach((item) => {
+        const existingEntry = transformedData.find(
+          (entry) => entry.SKU === item.SKU
+        );
+
+        if (existingEntry) {
+          // SKU already exists
+          const existingDateIndex = existingEntry.created_at.findIndex(
+            (date) => date === item.date.split("T")[0]
+          );
+
+          if (existingDateIndex !== -1) {
+            // Date already exists, add quantity to existing value
+            existingEntry.quantity += item.quantity;
+
+            // Find the corresponding index in line_items array
+            const lineItemIndex = existingEntry.created_at.indexOf(
+              item.date.split("T")[0]
+            );
+
+            // Add quantity to the line_items array at the same index
+            existingEntry.line_items[lineItemIndex].quantity += item.quantity;
+          } else {
+            // Date doesn't exist, push it along with new entry
+            existingEntry.created_at.push(item.date.split("T")[0]);
+            existingEntry.quantity += item.quantity;
+            existingEntry.line_items.push({
+              title: item.title,
+              quantity: item.quantity,
+              price: (parseFloat(item.retail_price) / item.quantity).toFixed(2),
+            });
+          }
+        } else {
+          // SKU doesn't exist, create a new entry
+          transformedData.push({
+            SKU: item.SKU,
+            created_at: [item.date.split("T")[0]],
+            line_items: [
+              {
+                title: item.title,
+                quantity: item.quantity,
+                price: (parseFloat(item.retail_price) / item.quantity).toFixed(
+                  2
+                ),
+              },
+            ],
+            title: item.title,
+            quantity: item.quantity,
+          });
+        }
+      });
+
+      set_all_returns(transformedData);
+      console.log("transformedData", transformedData);
+    } catch (error) {
+      console.error("error fetching return data in analytics :: ", error);
+    }
+  };
+
+  const handle_profit = async () => {
+    let stats = [];
+    if (user) {
+      email = user.email;
+      const requestData = {
+        email: email,
+      };
+      try {
+        const response = await axios.post(API_LINK + "get_status", requestData);
+        console.log("Successfully inserted status ", response.data);
+        stats = response.data.reduce((result, entry) => {
+          const formattedDate = entry.date.split("T")[0];
+          const gross_state =
+            parseInt(entry.totalRetail) -
+            parseInt(entry.totalDiscount) -
+            parseInt(entry.totalCostPrice);
+          console.log("showing gross state", gross_state);
+
+          result[formattedDate] = (result[formattedDate] || 0) + gross_state;
+          return result;
+        }, {});
+      } catch (err) {
+        console.error(err);
+      }
+    }
+    set_gross_stat(stats);
+    console.log("showing stats", stats);
+  };
 
   function get_total_sales() {
     set_analytics_options("get_total_sales");
@@ -117,9 +227,7 @@ function Analytics(props) {
   //   }
   // };
 
-  const handle_stats = async() => {
-    
-  }
+  const handle_stats = async () => {};
 
   const handle_total_sales = async () => {
     // setresponseData_analytics("");
@@ -399,6 +507,7 @@ function Analytics(props) {
       const result = [];
 
       val2.forEach((skuObj) => {
+        console.log("skuObj", skuObj);
         const title = skuObj.SKU;
         const data = [];
         let total = 0;
@@ -412,6 +521,7 @@ function Analytics(props) {
             .reduce((total, [, qty]) => total + parseInt(qty), 0);
 
           const retailPrice = parseFloat(skuObj.retail_price.replace(",", "")); // Parse retail_price as a float
+
 
           const dateParts = posObj.date.split("T"); // Split the string at the 'T'
           const extractedDate = dateParts[0];
@@ -462,7 +572,6 @@ function Analytics(props) {
       console.log("showing combined data in analytics after ", perDaySales_new);
       setPerDaySales(perDaySales_new);
 
-
       return finalResult;
       // console.log(
       //   "showing combined data in analytics 4 ",
@@ -498,7 +607,11 @@ function Analytics(props) {
           console.log("itemId :", itemId);
           // console.log( `quantity of ${title} is ${item.quantity}`)
           if (productDetails[title]) {
-            if (!productDetails[title].line_items.some(lineItem => lineItem.id === itemId)) {
+            if (
+              !productDetails[title].line_items.some(
+                (lineItem) => lineItem.id === itemId
+              )
+            ) {
               productDetails[title].line_items.push(item);
               productDetails[title].created_at.push(created_at);
               productDetails[title].quantity += quantity_item;
@@ -567,7 +680,10 @@ function Analytics(props) {
       //   for (const title in productDetails) {
       //     console.log(title);
       //   }
-      console.log("showing new_order_analytics ", new_order_analytics);
+      console.log(
+        "transformedData showing new_order_analytics ",
+        new_order_analytics
+      );
       setTopProducts(new_order_analytics.slice(0, 10));
       // sorting_function(productDetailsArray);
       setallProducts(new_order_analytics);
@@ -650,6 +766,8 @@ function Analytics(props) {
   };
 
   useEffect(() => {
+    handle_profit();
+    handle_returns();
     handle_total_sales();
     // if (perDaySales.length > 0) handle_pos_data();
     console.log("iam in use effect 1");
@@ -815,6 +933,17 @@ function Analytics(props) {
                   alignItems="center"
                   xs={10}
                 >
+                  <Grid item xs={12} md={6} lg={6}>
+                    {gross_stat && (
+                      <Gross_stats
+                        obj_daySales={gross_stat}
+                        name="Gross statistics"
+                      />
+                    )}
+                  </Grid>
+                    <Grid item xs={10}>
+                    <Return_stat obj1={all_returns} />
+                  </Grid>
                   <Grid item xs={10}>
                     {perDaySalesData && (
                       <Sales_per_day
@@ -969,9 +1098,6 @@ function Analytics(props) {
                 )}
               </ul> */}
           </div>
-          {/* ) : (
-            ""
-          )} */}
         </div>
       </Container>
     </div>

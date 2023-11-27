@@ -1,0 +1,9 @@
+SKU,Barcode,Title,Warehouse,Company,Retail_price,Quantity,Discount_per,Tax_per,Date,Time
+123432,454-dew,Gloves,warehouse 1,Meptics,600,2,12,2,2023-11-23T00:00:00.000Z,1:04:46
+123432,454-dew,Gloves,warehouse 2,Meptics,600,2,12,2,2023-11-24T00:00:00.000Z,1:07:23
+123432,454-dew,Gloves,warehouse 3,Meptics,600,2,12,2,2023-11-24T00:00:00.000Z,1:09:09
+123432,454-dew,Gloves,warehouse 4,Meptics,600,2,12,2,2023-11-25T00:00:00.000Z,1:11:05
+123432,454-dew,Gloves,warehouse 5,Meptics,600,2,12,2,2023-11-25T00:00:00.000Z,1:24:37
+2eed3,234rt4,Coke,warehouse 6,Meptics,15000,10,2,3,2023-11-23T00:00:00.000Z,1:24:37
+123432,454-dew,Gloves,warehouse 7,Meptics,600,2,2,2,2023-11-25T00:00:00.000Z,1:25:30
+2eed3,234rt4,Coke,warehouse 8,Meptics,15000,10,2,2,2023-11-25T00:00:00.000Z,1:25:30

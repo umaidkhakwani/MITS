@@ -18,6 +18,8 @@ var API_LINK = "http://localhost:5000/";
 function Inventory_products() {
   const [responseData_customers, setResponseData_customers] = useState([]);
   const [product_details, setproduct_details] = useState([]);
+  const [pos_closing, setpos_closing] = useState([]);
+  const [return_items, setreturn_items] = useState([]);
   const [warehouse_details, setwarehouse_details] = useState([]);
   const [pos_details, setpos_details] = useState([]);
   const [product_options, set_product_options] = useState("view_products");
@@ -27,6 +29,10 @@ function Inventory_products() {
 
   const user = auth.currentUser;
   var email = "";
+
+  if (user) {
+    email = user.email;
+  }
 
   const handle_view_products = () => {
     set_product_options("view_products");
@@ -96,6 +102,23 @@ function Inventory_products() {
         // Handle the error
       }
     }
+  }
+
+  async function handle_return(){
+    const requestData = {
+      email: email,
+    };
+    try {
+      const response = await axios.post(
+        API_LINK + "get_return_data",
+        requestData
+      );
+      console.log("Successfully fetched all returns ", response.data);
+      // set_all_returns(response.data);
+      setreturn_items(response.data);
+      }catch(error){
+        console.log("Error fetching return data ", error);
+      }
   }
 
   async function handle_get_warehouse_data() {
@@ -236,6 +259,7 @@ function Inventory_products() {
 
 
   useEffect(() => {
+    handle_return();
     handle_get_product_data();
     handle_get_warehouse_data();
     handle_get_pos_data();
@@ -290,7 +314,7 @@ function Inventory_products() {
         ) : product_options === "create_products" ? (
           <Products_create />
         ) : product_options === "export_products" ? (
-          <ExportCSV details={product_details} warehouseDetails={warehouse_details} posDetails ={pos_details} />
+          <ExportCSV details={product_details} warehouseDetails={warehouse_details} posDetails ={pos_details} return_items_data={return_items} />
         ) : product_options === "import_products" ? (
           <ImportCSV />
         ) : (

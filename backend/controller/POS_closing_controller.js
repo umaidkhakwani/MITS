@@ -8,10 +8,12 @@ const create_pos_closing = async () => {
         id INT,
         description TEXT(3000),
         gst TEXT(3000),
+        discount TEXT(3000),
         company_name VARCHAR(255),
         total_amount DECIMAL(13, 2),
         cost_price DECIMAL(13, 2),
         user_paid DECIMAL(13, 2),
+        discount_price DECIMAL(13, 2),
         transaction VARCHAR(255),
         time TIME NOT NULL,
         date DATE NOT NULL,
@@ -31,26 +33,30 @@ const insert_pos_closing = async (product) => {
     id,
     description,
     gst,
+    discount,
     company,
     total_amount,
     cost_price,
     user_paid,
+    discount_price,
     transaction,
     time,
     date,
   } = product;
   const sql =
-    "INSERT INTO pos_closing (id, description, gst, company_name, total_amount , cost_price , user_paid , transaction, time, date ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    "INSERT INTO pos_closing (id, description, gst, discount, company_name, total_amount , cost_price , user_paid , discount_price, transaction, time, date ) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
   const pool = await connection.getConnection();
   try {
     await pool.query(sql, [
       id,
       description,
       gst,
+      discount,
       company,
       total_amount,
       cost_price,
       user_paid,
+      discount_price,
       transaction,
       time,
       date,
@@ -84,27 +90,45 @@ const get_all_details = async () => {
 const get_pos_details_Oncompany = async (company) => {
   const sql = "SELECT * FROM pos_closing WHERE company_name = ?";
   const pool = await connection.getConnection();
-  try {
+  try { 
     return await pool.query(sql, [company]);
   } finally {
     pool.release(); // Release the connection back to the pool
   }
 };
 
-const update_pos_stock = async (company, warehouse_name, SKU, quantity, time, date) => {
-    const sql = `
+const update_pos_stock = async (
+  company,
+  warehouse_name,
+  SKU,
+  quantity,
+  time,
+  date
+) => {
+  const sql = `
       UPDATE warehouse_product
       SET quantity = quantity - ?
       WHERE SKU = ? AND company = ? AND warehouse = ?;
     `;
-  
-    const pool = await connection.getConnection();
-    try {
-      return await pool.query(sql, [quantity, SKU, company, warehouse_name]);
-    } finally {
-      pool.release(); // Release the connection back to the pool
-    }
-  };
+
+  const pool = await connection.getConnection();
+  try {
+    return await pool.query(sql, [quantity, SKU, company, warehouse_name]);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
+const import_pos_closing = async (query) => {
+  // const sql = "SELECT * FROM product_list WHERE company = ?";
+  const pool = await connection.getConnection();
+  try {
+    return await pool.query(query);
+  } finally {
+    pool.release(); // Release the connection back to the pool
+  }
+};
+
 
 // const getUserByEmailandWarehouse = async (email, warehouse) => {
 //   const sql = "SELECT * FROM product_list WHERE email = ? AND warehouse = ?";
@@ -177,4 +201,5 @@ module.exports = {
   get_all_details,
   get_pos_details_Oncompany,
   update_pos_stock,
+  import_pos_closing,
 };
