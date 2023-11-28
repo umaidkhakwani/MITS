@@ -2,7 +2,7 @@ import { Box, Button, Container, Stack } from "@mui/material";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 
-var API_LINK = "http://localhost:5000/";
+var API_LINK = "http://191.101.233.66:5000/";
 var sortedCustomers = "";
 
 function Customers() {

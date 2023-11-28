@@ -19,7 +19,7 @@ import Create_Expense from "./Create_Expense";
 const auth = getAuth(firebase_app);
 const user = auth.currentUser;
 
-var API_LINK = "http://localhost:5000/";
+var API_LINK = "http://191.101.233.66:5000/";
 var sortedCustomers = "";
 var email_user = "";
 

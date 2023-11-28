@@ -20,7 +20,7 @@
   
   import MITS_gif from "../images/MITS_Logo.gif";
   
-  var API_LINK = "http://localhost:5000/";
+  var API_LINK = "http://191.101.233.66:5000/";
   var total_orders_count = 0;
   
   function Analytics2() {
@@ -1465,7 +1465,7 @@
   
   const auth = getAuth(firebase_app);
   
-  var API_LINK = "http://localhost:5000/";
+  var API_LINK = "http://191.101.233.66:5000/";
   var total_orders_count = 0;
   
   function Analytics(props) {
