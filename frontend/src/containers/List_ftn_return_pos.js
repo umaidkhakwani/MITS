@@ -36,7 +36,7 @@ import convertToUTC from "../components/UTC_converter";
 
 const auth = getAuth(firebase_app);
 
-var API_LINK = "http://127.0.0.1:5000/";
+var API_LINK = "127.0.0.1:5000/";
 const user = auth.currentUser;
 
 const pdfstyle = {

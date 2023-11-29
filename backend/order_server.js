@@ -221,7 +221,7 @@ app.post("/get_prediction", async (req, res) => {
 
   // Send a POST request to the Flask "/train" route
   axios
-    .post("http://127.0.0.1:4000/train", requestData)
+    .post("127.0.0.1:4000/train", requestData)
     .then((response) => {
       if (response.data.predictions) {
         console.log(

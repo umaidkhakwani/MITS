@@ -170,7 +170,7 @@ export default function Sidebar() {
   const [user_title, setuser_title] = useState("");
 
   const user = auth.currentUser;
-  var API_LINK = "http://127.0.0.1:5000/";
+  var API_LINK = "127.0.0.1:5000/";
   var title2 = "";
 
   const handleDrawerToggle = () => {

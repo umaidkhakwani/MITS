@@ -22,7 +22,7 @@ import Transfer_Stock from "./Transfer_Stock";
 
 const auth = getAuth(firebase_app);
 
-var API_LINK = "http://127.0.0.1:5000/";
+var API_LINK = "127.0.0.1:5000/";
 var sortedCustomers = "";
 
 function Update_warehouse_info(props) {

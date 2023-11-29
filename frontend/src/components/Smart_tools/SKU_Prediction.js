@@ -22,7 +22,7 @@ import { useSelector } from "react-redux";
 import MITS_gif from "../../images/MITS_Logo.gif";
 import SalesCard from "../../containers/SalesCard";
 
-var API_LINK = "http://127.0.0.1:5000/";
+var API_LINK = "127.0.0.1:5000/";
 var total_orders_count = 0;
 const auth = getAuth(firebase_app);
 
