@@ -59,7 +59,18 @@ app.use(bodyParser.json());
 userModel.createUserTable();
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hello from backend :5000");
+});
+
+app.get("/getRequest", (req, res) => {
+  axios
+    .get("http://191.101.233.66:4000/get_display")
+    .then((response) => {   
+        res.send(response);
+    })
+    .catch((error) => {
+      res.status(500).send("Error sending POST request to Flask");
+    });
 });
 
 // Registration route

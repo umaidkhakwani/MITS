@@ -5,6 +5,11 @@ import numpy as np
 import os
 app = Flask(__name__)
 
+@app.route('/get_display', methods=['POST', 'GET'])
+def Display():
+    return "hello from prediction :4000"
+
+
 @app.route('/train', methods=['POST', 'GET'])
 def Train():
     import pandas as pd
