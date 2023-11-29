@@ -64,7 +64,7 @@ app.get("/", (req, res) => {
 
 app.get("/getRequest", (req, res) => {
   axios
-    .get("http://191.101.233.66:4000/get_display")
+    .get("http://127.0.0.1:4000/get_display")
     .then((response) => {   
         res.send(response);
     })
@@ -236,7 +236,7 @@ app.post("/get_prediction", async (req, res) => {
 
   // Send a POST request to the Flask "/train" route
   axios
-    .post("http://191.101.233.66:4000/train", requestData)
+    .post("http://127.0.0.1:4000/train", requestData)
     .then((response) => {
       if (response.data.predictions) {
         console.log(
