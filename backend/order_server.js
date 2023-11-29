@@ -58,6 +58,10 @@ app.use(bodyParser.json());
 
 userModel.createUserTable();
 
+app.get("/", (req, res) => {
+  res.send("Hello World!");
+});
+
 // Registration route
 app.post("/register", async (req, res) => {
   const { fname, lname, email, password, company, userToken } = req.body;
@@ -221,7 +225,7 @@ app.post("/get_prediction", async (req, res) => {
 
   // Send a POST request to the Flask "/train" route
   axios
-    .post("127.0.0.1:4000/train", requestData)
+    .post("http://191.101.233.66:4000/train", requestData)
     .then((response) => {
       if (response.data.predictions) {
         console.log(
