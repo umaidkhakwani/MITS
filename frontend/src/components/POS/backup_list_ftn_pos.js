@@ -35,7 +35,7 @@ import convertToUTC from "../components/UTC_converter";
 
 const auth = getAuth(firebase_app);
 
-var API_LINK = "http://191.101.233.66:5000/";
+var API_LINK = "http://127.0.0.1:5000/";
 const user = auth.currentUser;
 
 const pdfstyle = {
@@ -1217,7 +1217,7 @@ export default List_ftn_pos;
 
 // const auth = getAuth(firebase_app);
 
-// var API_LINK = "http://191.101.233.66:5000/";
+// var API_LINK = "http://127.0.0.1:5000/";
 // const user = auth.currentUser;
 
 // const pdfstyle = {

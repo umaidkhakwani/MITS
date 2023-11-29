@@ -5,7 +5,7 @@ import firebase_app from "../../Firebase/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import List_ftn_all from "../../containers/List_ftn_all";
 
-var API_LINK = "http://191.101.233.66:5000/";
+var API_LINK = "http://127.0.0.1:5000/";
 const auth = getAuth(firebase_app);
 var email_user = "";
 var sortedCustomers = "";

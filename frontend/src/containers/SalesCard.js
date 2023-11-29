@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card, CardContent, Button } from "@mui/material";
 import axios from "axios";
 
-var API_LINK = "http://191.101.233.66:5000/";
+var API_LINK = "http://127.0.0.1:5000/";
 
 const cardStyle = {
   background: "linear-gradient(45deg, #593993, #9319B5 )",
